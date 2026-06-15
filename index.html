@@ -487,7 +487,7 @@ async function sbQuery(table, filters={}){
   return data;
 }
 
-async function loadData(){
+async window.loadData = function loadData(){
   setSyncing(false);
   try{
     let q = sb.from('productos').select('*').order('fecha',{ascending:true});
@@ -584,7 +584,7 @@ function checkSession(){
   return false;
 }
 
-function enterApp(){
+window.enterApp = function enterApp(){
   $('login').style.display='none';
   $('app').classList.add('show');
   $('hstore').textContent=tienda.nombre;
@@ -593,7 +593,7 @@ function enterApp(){
   loadData();
 }
 
-function doLogout(){
+window.doLogout = function doLogout(){
   if(!confirm('¿Cerrar sesión?')) return;
   try{ localStorage.removeItem(SK); }catch(e){}
   tienda=null; data=[];
@@ -607,7 +607,7 @@ function doLogout(){
 // ═══════════════════════════════════════════════════════════════════
 // NAVEGACIÓN
 // ═══════════════════════════════════════════════════════════════════
-function goPage(id){
+window.goPage = function goPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
   $('pg-'+id).classList.add('on');
@@ -619,7 +619,7 @@ function goPage(id){
   if(id!=='scan' && camOn) stopCam();
 }
 
-function goLista(cat='all', sf='all'){
+window.goLista = function goLista(cat='all', sf='all'){
   curCat=cat; curSF=sf;
   // reset status buttons
   ['all','urg','p'].forEach(x=>$('sf-'+x).classList.remove('on'));
@@ -629,7 +629,7 @@ function goLista(cat='all', sf='all'){
   $('pg-lista').classList.add('on');
 }
 
-function go15(){
+window.go15 = function go15(){
   const d15 = data.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=15;})
     .sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0));
   const el=$('plist15');
@@ -639,7 +639,7 @@ function go15(){
   $('pg-15').classList.add('on');
 }
 
-function goRes(){
+window.goRes = function goRes(){
   const el=$('plist-res');
   const cnt={};
   CATS.forEach(c=>cnt[c]={t:0,u:0,p:0,c:0,prods:[]});
@@ -681,7 +681,7 @@ function goRes(){
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
-function refreshAll(){
+window.refreshAll = function refreshAll(){
   const urg=data.filter(p=>est(p)==='u').length;
   $('hurg').textContent=urg;
   $('htot').textContent=data.length;
@@ -693,7 +693,7 @@ function refreshAll(){
   if(curPg==='exp') buildExp();
 }
 
-function buildDash(){
+window.buildDash = function buildDash(){
   const urg=data.filter(p=>est(p)==='u');
   const d15=data.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=15;});
   $('dgrid').innerHTML=`
@@ -749,7 +749,7 @@ function buildDash(){
 // ═══════════════════════════════════════════════════════════════════
 // LISTA
 // ═══════════════════════════════════════════════════════════════════
-function buildCats(){
+window.buildCats = function buildCats(){
   const cnt={};CATS.forEach(c=>cnt[c]=0);
   data.forEach(p=>{if(cnt[p.categoria]!==undefined)cnt[p.categoria]++;});
   $('cpills').innerHTML=
@@ -757,16 +757,16 @@ function buildCats(){
     +CATS.map((c,i)=>`<button class="cpill ${curCat===c?'on':''}" data-cat="${c}" data-action="setCat"><span class="cdot" style="background:${CC[i]}"></span>${c.split(' ')[0]} ${cnt[c]}</button>`).join('');
 }
 
-function setCat(c){ curCat=c; buildCats(); applyF(); }
+window.setCat = function setCat(c){ curCat=c; buildCats(); applyF(); }
 
-function setSF(v){
+window.setSF = function setSF(v){
   curSF=v;
   ['all','urg','p'].forEach(x=>$('sf-'+x).classList.remove('on'));
   $('sf-'+v).classList.add('on');
   applyF();
 }
 
-function applyF(){
+window.applyF = function applyF(){
   const q=($('sq').value||'').toLowerCase().trim();
   let f=data.filter(p=>{
     if(curCat!=='all'&&p.categoria!==curCat)return false;
@@ -786,7 +786,7 @@ function applyF(){
   el.innerHTML=f.map(renderCard).join('');
 }
 
-function renderCard(p){
+window.renderCard = function renderCard(p){
   const e=est(p),d=dias(p.fecha);
   const bc={ok:'b-ok',u:'b-u',p:'b-p',c:'b-c',s:'b-s'}[e];
   const bt=e==='c'?'Caducado':e==='u'?`⚠ ${d}d`:e==='p'?`${d}d`:e==='s'?'Sin fecha':`${d}d`;
@@ -809,7 +809,7 @@ function renderCard(p){
 // ═══════════════════════════════════════════════════════════════════
 // MODAL EDITAR / AÑADIR
 // ═══════════════════════════════════════════════════════════════════
-function openEdit(id){
+window.openEdit = function openEdit(id){
   const p=data.find(x=>x.id==id); if(!p)return;
   editId=id;
   $('modal-h').textContent='Editar producto';
@@ -820,7 +820,7 @@ function openEdit(id){
   $('modal').classList.add('on');
 }
 
-function openNew(){
+window.openNew = function openNew(){
   editId=null;
   $('modal-h').textContent='Añadir producto';
   ['fn','ff','fp2','fk'].forEach(id=>$(id).value='');
@@ -829,9 +829,9 @@ function openNew(){
   $('modal').classList.add('on');
 }
 
-function closeModal(){ $('modal').classList.remove('on'); }
+window.closeModal = function closeModal(){ $('modal').classList.remove('on'); }
 
-async function saveItem(){
+async window.saveItem = function saveItem(){
   const nombre=$('fn').value.trim(); if(!nombre)return;
   const item={nombre,fecha:$('ff').value||null,categoria:$('fc').value,
     precio:parseFloat($('fp2').value)||null,codigo:$('fk').value.trim()};
@@ -852,7 +852,7 @@ async function saveItem(){
   }catch(e){ console.error(e); toast('⚠ Error al guardar'); }
 }
 
-async function deleteItem(){
+async window.deleteItem = function deleteItem(){
   if(!editId)return;
   try{
     const {error}=await sb.from('productos').delete().eq('id',editId);
@@ -865,7 +865,7 @@ async function deleteItem(){
 // ═══════════════════════════════════════════════════════════════════
 // ESCÁNER
 // ═══════════════════════════════════════════════════════════════════
-async function toggleCam(){
+async window.toggleCam = function toggleCam(){
   if(camOn){stopCam();return;}
   const btn=$('bcam');
   btn.textContent='⏳ Iniciando...'; btn.disabled=true;
@@ -946,7 +946,7 @@ async function toggleCam(){
   }
 }
 
-function stopCam(){
+window.stopCam = function stopCam(){
   try{Quagga.stop();}catch(e){}
   // Detener todos los tracks de video en el contenedor
   const qvids=document.querySelectorAll('#quagga-target video');
@@ -958,13 +958,13 @@ function stopCam(){
   $('shit').textContent='Activa la cámara para escanear';
 }
 
-async function flipCam(){
+async window.flipCam = function flipCam(){
   stopCam();
   await new Promise(r=>setTimeout(r,500));
   await toggleCam();
 }
 
-function buscarManual(){
+window.buscarManual = function buscarManual(){
   const v=($('mi').value||'').trim(); if(v) processCod(v);
 }
 
@@ -975,7 +975,7 @@ function processCod(code){
   renderScanRes(code,matches);
 }
 
-function renderScanRes(code,matches){
+window.renderScanRes = function renderScanRes(code,matches){
   const el=$('scan-res');
   if(!matches.length){
     el.innerHTML=`<div class="rcard">
@@ -1029,7 +1029,7 @@ function renderScanRes(code,matches){
   }
 }
 
-async function guardarNuevo(code){
+async window.guardarNuevo = function guardarNuevo(code){
   const n=($('nn').value||'').trim(); if(!n){toast('⚠ Escribe un nombre');return;}
   try{
     const item={tienda_id:tienda.id,nombre:n,fecha:$('nf2').value||null,
@@ -1041,7 +1041,7 @@ async function guardarNuevo(code){
   }catch(e){toast('⚠ Error al guardar');}
 }
 
-async function updFecha(id){
+async window.updFecha = function updFecha(id){
   const f=($('uf').value||''); if(!f){toast('⚠ Selecciona fecha');return;}
   try{
     const {error}=await sb.from('productos').update({fecha:f,updated_at:new Date().toISOString()}).eq('id',id);
@@ -1054,7 +1054,7 @@ async function updFecha(id){
 // ═══════════════════════════════════════════════════════════════════
 // EXPORTAR
 // ═══════════════════════════════════════════════════════════════════
-function buildExp(){
+window.buildExp = function buildExp(){
   const urg=data.filter(p=>est(p)==='u').length;
   const pronto=data.filter(p=>est(p)==='p').length;
   const cad=data.filter(p=>est(p)==='c').length;
@@ -1073,7 +1073,7 @@ function getExpData(){
 
 const estL=e=>({ok:'OK',u:'Urgente',p:'Próximo',c:'Caducado',s:'Sin fecha'}[e]||'');
 
-function exportCSV(){
+window.exportCSV = function exportCSV(){
   const f=getExpData(); if(!f.length){toast('Sin datos');return;}
   const h='FECHA,MES,NOMBRE,CÓDIGO,PRECIO (€),ESTADO,CATEGORÍA';
   const rows=f.map(p=>{
@@ -1086,7 +1086,7 @@ function exportCSV(){
   toast(`✅ CSV: ${f.length} productos`);
 }
 
-function exportXLSX(){
+window.exportXLSX = function exportXLSX(){
   if(typeof XLSX==='undefined'){
     toast('⏳ Cargando...');
     const s=document.createElement('script');
@@ -1215,7 +1215,7 @@ async function importCSV(inp){
   }
 }
 
-async function confirmReset(){
+async window.confirmReset = function confirmReset(){
   if(!confirm('¿Borrar todos los productos de esta tienda y volver al catálogo original?'))return;
   toast('⏳ Reseteando...',10000);
   const {error}=await sb.from('productos').delete().eq('tienda_id',tienda.id);
