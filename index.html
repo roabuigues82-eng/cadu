@@ -23,27 +23,6 @@
 html{height:100%;background:var(--bg)}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);overflow:hidden;height:100%;height:-webkit-fill-available;max-height:-webkit-fill-available}
 
-.home-top{padding:16px 16px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
-.home-logo{font-size:22px;font-weight:700;color:var(--accent);font-family:monospace;letter-spacing:-1px}
-.home-store{font-size:13px;color:var(--muted);font-weight:500}
-.home-pills{display:flex;gap:8px;margin-top:4px}
-.hpill{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:500}
-.hpill.red{background:rgba(239,68,68,.15);color:#f87171}
-.hpill.gray{background:var(--bg3);color:var(--muted)}
-.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 14px;flex:1}
-.dc{border-radius:18px;padding:20px 18px;cursor:pointer;transition:transform .12s,opacity .12s;position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:130px}
-.dc:active{transform:scale(.95);opacity:.88}
-.dc .arr{position:absolute;top:14px;right:16px;font-size:18px;opacity:.5}
-.dc .val{font-size:38px;font-weight:700;line-height:1;margin-bottom:2px}
-.dc .lbl{font-size:13px;font-weight:500;opacity:.9;line-height:1.3}
-.dc .ico{font-size:28px;margin-bottom:8px}
-.dc1{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
-.dc2{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff}
-.dc3{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff}
-.dc4{background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:#fff}
-.fab-add{position:fixed;bottom:calc(var(--nav) + var(--sb) + 16px);right:18px;width:56px;height:56px;border-radius:28px;background:var(--accent);color:#fff;border:none;font-size:26px;cursor:pointer;z-index:150;box-shadow:0 4px 16px rgba(249,115,22,.5);display:none;align-items:center;justify-content:center;transition:transform .15s}
-.fab-add:active{transform:scale(.92)}
-.fab-add.show{display:flex}
 /* LOGIN */
 #login{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-bottom:calc(24px + var(--sb))}
 .l-logo{font-size:40px;font-weight:700;color:var(--accent);font-family:monospace;letter-spacing:-1px;margin-bottom:4px}
@@ -303,16 +282,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
   <div class="pages">
     <!-- HOME -->
     <div class="page on" id="pg-home">
-      <div class="home-top">
-        <div class="home-logo">CaduTEDI</div>
-        <div class="home-store" id="hstore-home">—</div>
-        <div class="home-pills">
-          <span class="hpill red"><span id="h-urg2">0</span> urgentes</span>
-          <span class="hpill gray"><span id="h-tot2">0</span> productos</span>
-        </div>
+      <div class="scroll">
+        <div class="dash-grid" id="dgrid"></div>
+        <div id="dprox"></div>
+        <div id="dcats"></div>
       </div>
-      <div class="dash-grid" id="dgrid"></div>
-      <button class="fab-add" id="fab-add">＋</button>
     </div>
 
     <!-- LISTA -->
@@ -352,27 +326,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
       <div class="scroll" id="plist-res"></div>
     </div>
 
-    <!-- BUSQUEDA -->
-    <div class="page" id="pg-search">
-      <div class="list-hdr">
-        <button class="back" id="back-search">&#8249; Inicio</button>
-        <span style="font-size:15px;font-weight:600;margin-left:8px">Buscar</span>
-      </div>
-      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0">
-        <div class="s-wrap">
-          <span class="s-ico">&#128269;</span>
-          <input type="search" id="sq2" placeholder="Nombre o codigo..." autocomplete="off" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 10px 10px 34px;color:var(--text);font-size:14px;outline:none;font-family:inherit">
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <span style="font-size:13px;color:var(--muted)">Desde:</span>
-          <input type="date" id="fd-from" style="flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-size:13px;outline:none;font-family:inherit">
-          <span style="font-size:13px;color:var(--muted)">Hasta:</span>
-          <input type="date" id="fd-to" style="flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-size:13px;outline:none;font-family:inherit">
-        </div>
-        <button id="btn-search-go" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Buscar</button>
-      </div>
-      <div class="plist" id="search-results"></div>
-    </div>
     <!-- SCANNER -->
     <div class="page" id="pg-scan">
       <div class="scan-vid" id="quagga-target" style="position:relative;background:#000;min-height:200px">
@@ -403,7 +356,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
             <button class="fp" id="ef-cad">Caducados</button>
           </div>
           <div class="sec2">Formato</div>
-          <div class="ecard" id="btn-csv-hidden" style="display:none">
+          <div class="ecard" id="btn-csv">
             <div class="ecard-ico">📄</div>
             <div><div class="ecard-t">Descargar CSV</div><div class="ecard-d">Compatible con Excel y el escáner</div></div>
           </div>
@@ -658,7 +611,7 @@ function goPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
   $('pg-'+id).classList.add('on');
-  const nbMap={home:'nb-home',search:'nb-search',scan:'nb-scan',exp:'nb-exp',cfg:'nb-cfg'};
+  const nbMap={home:'nb-home',scan:'nb-scan',exp:'nb-exp',cfg:'nb-cfg'};
   if(nbMap[id]) $(nbMap[id]).classList.add('on');
   curPg=id;
   if(id==='home') buildDash();
@@ -728,22 +681,6 @@ function goRes(){
 // ═══════════════════════════════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
-function doSearch(){
-  const q=(document.getElementById('sq2').value||'').toLowerCase().trim();
-  const from=document.getElementById('fd-from').value;
-  const to=document.getElementById('fd-to').value;
-  let f=data.filter(p=>{
-    if(q&&!p.nombre.toLowerCase().includes(q)&&!(p.codigo||'').includes(q))return false;
-    if(from&&p.fecha&&p.fecha<from)return false;
-    if(to&&p.fecha&&p.fecha>to)return false;
-    if((from||to)&&!p.fecha)return false;
-    return true;
-  });
-  f.sort((a,b)=>(a.fecha||'9999')<(b.fecha||'9999')?-1:1);
-  const el=document.getElementById('search-results');
-  if(!f.length){el.innerHTML='<div class="empty"><div class="empty-i">&#128269;</div><div>Sin resultados</div></div>';return;}
-  el.innerHTML=f.map(renderCard).join('');
-}
 function refreshAll(){
   const urg=data.filter(p=>est(p)==='u').length;
   $('hurg').textContent=urg;
@@ -757,15 +694,6 @@ function refreshAll(){
 }
 
 function buildDash(){
-  const el_urg2=document.getElementById('h-urg2');
-  const el_tot2=document.getElementById('h-tot2');
-  const hs=document.getElementById('hstore-home');
-  if(el_urg2) el_urg2.textContent=data.filter(p=>est(p)==='u').length;
-  if(el_tot2) el_tot2.textContent=data.length;
-  if(hs&&tienda) hs.textContent=tienda.nombre;
-  const fab=document.getElementById('fab-add');
-  if(fab) fab.classList.add('show');
-
   const urg=data.filter(p=>est(p)==='u');
   const d15=data.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=15;});
   $('dgrid').innerHTML=`
@@ -1170,15 +1098,6 @@ function exportXLSX(){
 function buildXL(){
   const f=getExpData(); if(!f.length){toast('Sin datos');return;}
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.json_to_sheet(f.map(p=>({'Nombre':p.nombre,'Fecha':fmt(p.fecha),'Dias':dias(p.fecha)??'','Estado':estL(est(p)),'Categoria':p.categoria,'Precio':p.precio??'','Codigo':p.codigo||''})));
-  ws['!cols']=[{wch:35},{wch:14},{wch:8},{wch:12},{wch:24},{wch:8},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws,'CaduTEDI');
-  XLSX.writeFile(wb,'cadutedi_'+hoy()+'.xlsx');
-  toast('Excel: '+f.length+' productos');
-}
-function buildXL_old(){
-  const f=getExpData(); if(!f.length){toast('Sin datos');return;}
-  const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.json_to_sheet(f.map(p=>({'Nombre':p.nombre,'Fecha':fmt(p.fecha),'Días':dias(p.fecha)??'','Estado':estL(est(p)),'Categoría':p.categoria,'Precio':p.precio??'','Código':p.codigo||''})));
   ws['!cols']=[{wch:35},{wch:14},{wch:8},{wch:12},{wch:24},{wch:8},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws,'Caducidades');
@@ -1199,16 +1118,6 @@ function buildXL_old(){
   toast(`✅ Excel: ${f.length} productos`);
 }
 
-function exportPDF(){
-  const f=getExpData(); if(!f.length){toast('Sin datos');return;}
-  const titulo={todos:'Todos',urg:'Urgentes',p:'Proximos',cad:'Caducados'}[expF]||'Productos';
-  const filas=f.map(p=>'<tr><td>'+p.nombre+'</td><td>'+fmt(p.fecha)+'</td><td>'+(dias(p.fecha)??'-')+'</td><td>'+estL(est(p))+'</td><td>'+p.categoria+'</td><td>'+(p.precio!=null?p.precio.toFixed(2)+'EUR':'-')+'</td></tr>').join('');
-  const win=window.open('','_blank');
-  if(!win){toast('Activa las ventanas emergentes');return;}
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CaduTEDI</title><style>body{font-family:Arial,sans-serif;font-size:11px;margin:20px}h1{font-size:16px;color:#f97316}table{width:100%;border-collapse:collapse}th{background:#f97316;color:#fff;padding:6px 8px;text-align:left}td{padding:5px 8px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#fafafa}@media print{body{margin:10px}}</style></head><body><h1>CaduTEDI - '+titulo+'</h1><p style="color:#666;font-size:11px">Tienda: '+(tienda?tienda.nombre:'')+' - '+new Date().toLocaleDateString('es-ES')+' - '+f.length+' productos</p><table><thead><tr><th>Nombre</th><th>Caducidad</th><th>Dias</th><th>Estado</th><th>Categoria</th><th>Precio</th></tr></thead><tbody>'+filas+'</tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>');
-  win.document.close();
-  toast('PDF listo para imprimir');
-}
 const hoy=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 function dl(c,n,m){const b=new Blob([c],{type:m});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=n;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);}
 
@@ -1328,7 +1237,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
   // Nav
   $('nb-home').addEventListener('click', ()=>goPage('home'));
-  $('nb-search').addEventListener('click', ()=>goPage('search'));
   $('nb-scan').addEventListener('click', ()=>goPage('scan'));
   $('nb-exp').addEventListener('click', ()=>goPage('exp'));
   $('nb-cfg').addEventListener('click', ()=>goPage('cfg'));
@@ -1337,10 +1245,6 @@ document.addEventListener('DOMContentLoaded', function(){
   $('back-lista').addEventListener('click', ()=>goPage('home'));
   $('back-15').addEventListener('click', ()=>goPage('home'));
   $('back-res').addEventListener('click', ()=>goPage('home'));
-  document.getElementById('back-search').addEventListener('click', ()=>goPage('home'));
-  document.getElementById('fab-add').addEventListener('click', openNew);
-  document.getElementById('btn-search-go').addEventListener('click', doSearch);
-  document.getElementById('sq2').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
 
   // Lista filtros
   $('sq').addEventListener('input', applyF);
@@ -1395,8 +1299,8 @@ document.addEventListener('DOMContentLoaded', function(){
       this.classList.add('on');
     });
   });
+  $('btn-csv').addEventListener('click', exportCSV);
   $('btn-xlsx').addEventListener('click', exportXLSX);
-  document.getElementById('btn-pdf').addEventListener('click', exportPDF);
 
   // Ajustes
   $('f-imp').addEventListener('change', function(){ importCSV(this); });
@@ -1417,9 +1321,22 @@ document.addEventListener('DOMContentLoaded', function(){
     else if(action==='goRes') goRes();
     else if(action==='setCat') setCat(el.dataset.cat||'all');
   });
+  // Delegador global para elementos dinámicos
+  document.addEventListener('click', function(e){
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const a = el.dataset.action;
+    const id = el.dataset.id;
+    const cat = el.dataset.cat;
+    const sf = el.dataset.sf;
+    if(a==='openEdit') openEdit(id);
+    else if(a==='goLista') goLista(cat||'all', sf||'all');
+    else if(a==='go15') go15();
+    else if(a==='goRes') goRes();
+    else if(a==='setCat') setCat(cat||'all');
+  });
+
   // Exponer funciones para onclick en innerHTML
-  window.doSearch = doSearch;
-  window.exportPDF = exportPDF;
   window.goLista = goLista;
   window.go15 = go15;
   window.goRes = goRes;
