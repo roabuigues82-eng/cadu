@@ -1311,6 +1311,27 @@ document.addEventListener('DOMContentLoaded', function(){
   if(checkSession()){
     enterApp();
   }
+  // Exponer funciones para onclick en innerHTML
+  window.goLista = goLista;
+  window.go15 = go15;
+  window.goRes = goRes;
+  window.openEdit = openEdit;
+  window.setCat = setCat;
+  window.guardarNuevo = guardarNuevo;
+  window.updFecha = updFecha;
+  window.buscarManual = buscarManual;
+  window.goPage = goPage;
+  window.setSF = setSF;
+  window.closeModal = closeModal;
+  window.saveItem = saveItem;
+  window.deleteItem = deleteItem;
+  window.doLogout = doLogout;
+  window.confirmReset = confirmReset;
+  window.exportCSV = exportCSV;
+  window.exportXLSX = exportXLSX;
+  window.toggleCam = toggleCam;
+  window.stopCam = stopCam;
+  window.flipCam = flipCam;
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
