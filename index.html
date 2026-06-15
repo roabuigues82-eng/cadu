@@ -449,7 +449,14 @@ const CC = ['var(--c1)','var(--c5)','var(--c2)','var(--c6)','var(--c4)','var(--c
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 
-let sb = null;
+let _sb = null;
+function getSB(){
+  if(!_sb && typeof supabase !== 'undefined'){
+    _sb = supabase.createClient(SB_URL, SB_KEY);
+  }
+  return _sb;
+}
+Object.defineProperty(window,'sb',{get:getSB,set:v=>{_sb=v;}});
 let tienda = null;
 let data = [];
 let editId = null;
@@ -1227,8 +1234,7 @@ async window.confirmReset = function confirmReset(){
 // EVENTOS
 // ═══════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function(){
-  // Inicializar Supabase
-  sb = supabase.createClient(SB_URL, SB_KEY);
+  // Supabase ya inicializado via getter
 
   // Login
   $('lbtn').addEventListener('click', doLogin);
