@@ -1264,6 +1264,18 @@ document.addEventListener('DOMContentLoaded', function(){
   $('bflip').addEventListener('click', flipCam);
   $('mbuscar').addEventListener('click', buscarManual);
   $('mi').addEventListener('keydown', e=>{ if(e.key==='Enter') buscarManual(); });
+  $('scan-res').addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const el = $('scan-res');
+    if(btn.id==='btn-scan-cancel'||btn.id==='btn-scan-close'){
+      el.innerHTML=''; el.dataset.scanCode=''; el.dataset.scanId='';
+    } else if(btn.id==='btn-scan-add'){
+      guardarNuevo(el.dataset.scanCode);
+    } else if(btn.id==='btn-scan-save'){
+      updFecha(el.dataset.scanId);
+    }
+  });
   
   // Delegador de eventos para botones del escáner (funciona aunque se regenere el HTML)
   $('scan-res').addEventListener('click', function(e){
