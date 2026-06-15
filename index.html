@@ -488,7 +488,7 @@ async function sbQuery(table, filters={}){
   return data;
 }
 
-async window.loadData = function loadData(){
+window.loadData = async function loadData(){
   setSyncing(false);
   try{
     let q = sb.from('productos').select('*').order('fecha',{ascending:true});
@@ -832,7 +832,7 @@ window.openNew = function openNew(){
 
 window.closeModal = function closeModal(){ $('modal').classList.remove('on'); }
 
-async window.saveItem = function saveItem(){
+window.saveItem = async function saveItem(){
   const nombre=$('fn').value.trim(); if(!nombre)return;
   const item={nombre,fecha:$('ff').value||null,categoria:$('fc').value,
     precio:parseFloat($('fp2').value)||null,codigo:$('fk').value.trim()};
@@ -853,7 +853,7 @@ async window.saveItem = function saveItem(){
   }catch(e){ console.error(e); toast('⚠ Error al guardar'); }
 }
 
-async window.deleteItem = function deleteItem(){
+window.deleteItem = async function deleteItem(){
   if(!editId)return;
   try{
     const {error}=await sb.from('productos').delete().eq('id',editId);
@@ -866,7 +866,7 @@ async window.deleteItem = function deleteItem(){
 // ═══════════════════════════════════════════════════════════════════
 // ESCÁNER
 // ═══════════════════════════════════════════════════════════════════
-async window.toggleCam = function toggleCam(){
+window.toggleCam = async function toggleCam(){
   if(camOn){stopCam();return;}
   const btn=$('bcam');
   btn.textContent='⏳ Iniciando...'; btn.disabled=true;
@@ -959,7 +959,7 @@ window.stopCam = function stopCam(){
   $('shit').textContent='Activa la cámara para escanear';
 }
 
-async window.flipCam = function flipCam(){
+window.flipCam = async function flipCam(){
   stopCam();
   await new Promise(r=>setTimeout(r,500));
   await toggleCam();
@@ -1030,7 +1030,7 @@ window.renderScanRes = function renderScanRes(code,matches){
   }
 }
 
-async window.guardarNuevo = function guardarNuevo(code){
+window.guardarNuevo = async function guardarNuevo(code){
   const n=($('nn').value||'').trim(); if(!n){toast('⚠ Escribe un nombre');return;}
   try{
     const item={tienda_id:tienda.id,nombre:n,fecha:$('nf2').value||null,
@@ -1042,7 +1042,7 @@ async window.guardarNuevo = function guardarNuevo(code){
   }catch(e){toast('⚠ Error al guardar');}
 }
 
-async window.updFecha = function updFecha(id){
+window.updFecha = async function updFecha(id){
   const f=($('uf').value||''); if(!f){toast('⚠ Selecciona fecha');return;}
   try{
     const {error}=await sb.from('productos').update({fecha:f,updated_at:new Date().toISOString()}).eq('id',id);
@@ -1216,7 +1216,7 @@ async function importCSV(inp){
   }
 }
 
-async window.confirmReset = function confirmReset(){
+window.confirmReset = async function confirmReset(){
   if(!confirm('¿Borrar todos los productos de esta tienda y volver al catálogo original?'))return;
   toast('⏳ Reseteando...',10000);
   const {error}=await sb.from('productos').delete().eq('tienda_id',tienda.id);
