@@ -979,18 +979,34 @@ function renderScanRes(code,matches){
   const el=$('scan-res');
   if(!matches.length){
     el.innerHTML=`<div class="rcard">
-      <div class="rcard-h"><div class="rcard-code">${code}</div><div class="rcard-name">No encontrado</div><span class="bdg b-p">Nuevo</span></div>
+      <div class="rcard-h">
+        <div class="rcard-code">${code}</div>
+        <div class="rcard-name">Producto nuevo</div>
+        <span class="bdg b-p">No encontrado — añadir</span>
+      </div>
       <div class="nform">
-        <div class="nf"><label>Nombre</label><input id="nn" type="text" placeholder="Ej: Haribo Ositos" autocomplete="off"></div>
+        <div class="nf"><label>Nombre del producto</label><input id="nn" type="text" placeholder="Ej: Haribo Ositos" autocomplete="off"></div>
         <div class="nf"><label>Fecha caducidad</label><input id="nf2" type="date"></div>
-        <div class="nf"><label>Categoría</label><select id="nc"><option>Chuches y gominolas</option><option>Mascotas</option><option>Bebidas</option><option>Pilas</option><option>Chocolates y galletas</option><option>Chicles y caramelos duros</option><option>Snacks salados</option></select></div>
-        <div class="nf"><label>Precio (€)</label><input id="np" type="number" step="0.05" inputmode="decimal"></div>
+        <div class="nf"><label>Categoría</label>
+          <select id="nc">
+            <option>Chuches y gominolas</option><option>Mascotas</option>
+            <option>Bebidas</option><option>Pilas</option>
+            <option>Chocolates y galletas</option><option>Chicles y caramelos duros</option>
+            <option>Snacks salados</option>
+          </select>
+        </div>
+        <div class="nf"><label>Precio (€)</label><input id="np" type="number" step="0.05" inputmode="decimal" placeholder="0.00"></div>
       </div>
       <div class="rbtns">
-        <button class="rb-c" onclick="$('scan-res').innerHTML=''">Cancelar</button>
-        <button class="rb-s" onclick="guardarNuevo(${JSON.stringify(code)})">✅ Añadir</button>
+        <button class="rb-c" id="btn-scan-cancel">Cancelar</button>
+        <button class="rb-s" id="btn-scan-add">✅ Añadir producto</button>
       </div>
     </div>`;
+    // Conectar botones con addEventListener
+    // Guardar código en dataset para el delegador
+    el.dataset.scanCode = code;
+    // Foco en el nombre
+    setTimeout(()=>{ const n=document.getElementById('nn'); if(n) n.focus(); },100);
   }else{
     const p=matches[0];const e=est(p);const d=dias(p.fecha);
     const bc={ok:'b-ok',u:'b-u',p:'b-p',c:'b-c',s:'b-s'}[e];
@@ -1004,10 +1020,12 @@ function renderScanRes(code,matches){
         <div><div class="rl" style="margin-bottom:5px">Actualizar fecha</div><input class="rinput" type="date" id="uf" value="${p.fecha||''}"></div>
       </div>
       <div class="rbtns">
-        <button class="rb-c" onclick="$('scan-res').innerHTML=''">Cerrar</button>
-        <button class="rb-s" onclick="updFecha(${JSON.stringify(p.id)})">💾 Guardar</button>
+        <button class="rb-c" id="btn-scan-close">Cerrar</button>
+        <button class="rb-s" id="btn-scan-save">💾 Guardar fecha</button>
       </div>
     </div>`;
+    el.dataset.scanCode = code;
+    el.dataset.scanId = p.id;;
   }
 }
 
@@ -1246,6 +1264,20 @@ document.addEventListener('DOMContentLoaded', function(){
   $('bflip').addEventListener('click', flipCam);
   $('mbuscar').addEventListener('click', buscarManual);
   $('mi').addEventListener('keydown', e=>{ if(e.key==='Enter') buscarManual(); });
+  
+  // Delegador de eventos para botones del escáner (funciona aunque se regenere el HTML)
+  $('scan-res').addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const el = $('scan-res');
+    if(btn.id === 'btn-scan-cancel' || btn.id === 'btn-scan-close'){
+      el.innerHTML=''; el.dataset.scanCode=''; el.dataset.scanId='';
+    } else if(btn.id === 'btn-scan-add'){
+      guardarNuevo(el.dataset.scanCode);
+    } else if(btn.id === 'btn-scan-save'){
+      updFecha(el.dataset.scanId);
+    }
+  });
 
   // Exportar
   ['todos','urg','p','cad'].forEach(v=>{
