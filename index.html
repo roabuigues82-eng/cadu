@@ -657,7 +657,7 @@ function goRes(){
     const prox=v.prods.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=30;})
       .sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0)).slice(0,3);
     return `<div style="margin:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden">
-      <div style="padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="goLista(${JSON.stringify(c)},'all')">
+      <div style="padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer" data-cat="${c}" data-sf="all" data-action="goLista">
         <span style="width:11px;height:11px;border-radius:50%;background:${CC[i]};flex-shrink:0"></span>
         <span style="font-size:15px;font-weight:600;flex:1">${c}</span>
         <span style="font-size:20px;font-weight:700">${v.t}</span>
@@ -668,7 +668,7 @@ function goRes(){
         ${v.p?`<span style="font-size:12px;padding:3px 9px;border-radius:20px;background:rgba(245,158,11,.12);color:#fbbf24;font-weight:600">🟡 ${v.p} próximos</span>`:''}
         ${v.c?`<span style="font-size:12px;padding:3px 9px;border-radius:20px;background:rgba(100,100,120,.15);color:#6b7280;font-weight:600">⬛ ${v.c} caducados</span>`:''}
       </div>
-      ${prox.map(p=>{const d=dias(p.fecha);return `<div style="padding:9px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer" onclick="openEdit(${JSON.stringify(p.id)})">
+      ${prox.map(p=>{const d=dias(p.fecha);return `<div style="padding:9px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer" data-id="${p.id}" data-action="openEdit">
         <span style="font-size:11px;font-weight:700;color:#fff;background:${d<=7?'var(--danger)':'var(--warn)'};border-radius:6px;padding:2px 7px;min-width:28px;text-align:center">${d===0?'HOY':`${d}d`}</span>
         <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nombre}</span>
       </div>`;}).join('')}
@@ -697,19 +697,19 @@ function buildDash(){
   const urg=data.filter(p=>est(p)==='u');
   const d15=data.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=15;});
   $('dgrid').innerHTML=`
-    <div class="dc dc1" onclick="goLista('all','urg')">
+    <div class="dc dc1" data-action="goLista" data-cat="all" data-sf="urg">
       <span class="arr">›</span><div class="ico">🔴</div>
       <div class="val">${urg.length}</div><div class="lbl">Caducan en<br>7 días</div>
     </div>
-    <div class="dc dc2" onclick="go15()">
+    <div class="dc dc2" data-action="go15">
       <span class="arr">›</span><div class="ico">⏰</div>
       <div class="val">${d15.length}</div><div class="lbl">Caducan en<br>15 días</div>
     </div>
-    <div class="dc dc3" onclick="goLista('all','all')">
+    <div class="dc dc3" data-action="goLista" data-cat="all" data-sf="all">
       <span class="arr">›</span><div class="ico">📦</div>
       <div class="val">${data.length}</div><div class="lbl">Todos los<br>productos</div>
     </div>
-    <div class="dc dc4" onclick="goRes()">
+    <div class="dc dc4" data-action="goRes">
       <span class="arr">›</span><div class="ico">📊</div>
       <div class="val">${CATS.length}</div><div class="lbl">Por<br>categoría</div>
     </div>`;
@@ -718,9 +718,9 @@ function buildDash(){
   const prox=d15.sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0)).slice(0,5);
   if(prox.length){
     $('dprox').innerHTML=`
-      <div class="section">Caducan pronto <a onclick="go15()">Ver todos ›</a></div>
+      <div class="section">Caducan pronto <a data-action="go15">Ver todos ›</a></div>
       <div class="prox-card">
-        ${prox.map(p=>{const d=dias(p.fecha);return `<div class="prox-row" onclick="openEdit(${JSON.stringify(p.id)})">
+        ${prox.map(p=>{const d=dias(p.fecha);return `<div class="prox-row" data-id="${p.id}" data-action="openEdit">
           <span class="prox-d ${d<=7?'u':'p'}">${d===0?'Hoy':`${d}d`}</span>
           <span class="prox-n">${p.nombre}</span>
           <span class="prox-c">${p.categoria.split(' ')[0]}</span>
@@ -732,9 +732,9 @@ function buildDash(){
   const cnt={};CATS.forEach(c=>cnt[c]={t:0,u:0,p:0});
   data.forEach(p=>{if(!cnt[p.categoria])return;cnt[p.categoria].t++;const e=est(p);if(e==='u')cnt[p.categoria].u++;else if(e==='p')cnt[p.categoria].p++;});
   $('dcats').innerHTML=`
-    <div class="section">Por categoría <a onclick="goRes()">Ver detalle ›</a></div>
+    <div class="section">Por categoría <a data-action="goRes">Ver detalle ›</a></div>
     <div class="cat-card">
-      ${CATS.map((c,i)=>{const v=cnt[c];if(!v.t)return'';return `<div class="cat-row" onclick="goLista(${JSON.stringify(c)},'all')">
+      ${CATS.map((c,i)=>{const v=cnt[c];if(!v.t)return'';return `<div class="cat-row" data-cat="${c}" data-sf="all" data-action="goLista">
         <span class="cat-dot" style="background:${CC[i]}"></span>
         <span class="cat-n">${c}</span>
         <div class="cat-stats">
@@ -753,8 +753,8 @@ function buildCats(){
   const cnt={};CATS.forEach(c=>cnt[c]=0);
   data.forEach(p=>{if(cnt[p.categoria]!==undefined)cnt[p.categoria]++;});
   $('cpills').innerHTML=
-    `<button class="cpill ${curCat==='all'?'on':''}" onclick="setCat('all')"><span class="cdot" style="background:var(--muted)"></span>Todo ${data.length}</button>`
-    +CATS.map((c,i)=>`<button class="cpill ${curCat===c?'on':''}" onclick="setCat(${JSON.stringify(c)})"><span class="cdot" style="background:${CC[i]}"></span>${c.split(' ')[0]} ${cnt[c]}</button>`).join('');
+    `<button class="cpill ${curCat==='all'?'on':''}" data-cat="all" data-action="setCat"><span class="cdot" style="background:var(--muted)"></span>Todo ${data.length}</button>`
+    +CATS.map((c,i)=>`<button class="cpill ${curCat===c?'on':''}" data-cat="${c}" data-action="setCat"><span class="cdot" style="background:${CC[i]}"></span>${c.split(' ')[0]} ${cnt[c]}</button>`).join('');
 }
 
 function setCat(c){ curCat=c; buildCats(); applyF(); }
@@ -793,7 +793,7 @@ function renderCard(p){
   const col=catC(p.categoria);
   let barW=0,barC='var(--ok)';
   if(d!==null&&d>=0&&d<=30){barW=Math.round((1-d/30)*100);barC=d<=7?'var(--danger)':'var(--warn)';}
-  return `<div class="pcard ${e==='u'?'u':e==='p'?'p':e==='c'?'c':''}" onclick="openEdit(${JSON.stringify(p.id)})">
+  return `<div class="pcard ${e==='u'?'u':e==='p'?'p':e==='c'?'c':''}" data-id="${p.id}" data-action="openEdit">
     <div class="pcard-l">
       <div class="pn">${p.nombre}</div>
       <div class="pm"><span class="pdot" style="background:${col}"></span><span>${p.categoria.split(' ')[0]}</span><span style="opacity:.4">·</span><span class="pf">${fmt(p.fecha)}</span></div>
@@ -1311,6 +1311,16 @@ document.addEventListener('DOMContentLoaded', function(){
   if(checkSession()){
     enterApp();
   }
+  document.addEventListener('click', function(e){
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    if(action==='openEdit') openEdit(el.dataset.id);
+    else if(action==='goLista') goLista(el.dataset.cat||'all', el.dataset.sf||'all');
+    else if(action==='go15') go15();
+    else if(action==='goRes') goRes();
+    else if(action==='setCat') setCat(el.dataset.cat||'all');
+  });
   // Exponer funciones para onclick en innerHTML
   window.goLista = goLista;
   window.go15 = go15;
