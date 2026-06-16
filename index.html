@@ -603,10 +603,8 @@ function checkSession(){
 }
 
 async function doLogin(){
-  const user=($'lu').value||$$('lu').value;
-  // Fix: usar getElementById
-  const userVal=(document.getElementById('lu').value||''). trim().toLowerCase();
-  const passVal=(document.getElementById('lp').value||''). trim();
+  const userVal=(document.getElementById('lu').value||'').trim().toLowerCase();
+  const passVal=(document.getElementById('lp').value||'').trim();
   const btn=document.getElementById('lbtn');
   const err=document.getElementById('lerr');
   if(!userVal||!passVal){err.textContent='Introduce usuario y contraseña';return;}
