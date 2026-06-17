@@ -634,7 +634,7 @@ function doLogout(){
 async function enterApp(){
   $('login').style.display='none';
   $('app').classList.add('show');
-  $('hstore').textContent=tienda.nombre;
+  $('hstore').textContent='⚙️ Ajustes';
   $('cfg-store').textContent=tienda.nombre;
   await Promise.all([loadProductos(), loadReducciones()]);
   buildHome();
