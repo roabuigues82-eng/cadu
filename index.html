@@ -759,7 +759,7 @@ function buildCats(){
   filtrados.forEach(p=>{if(cnt[p.categoria]!==undefined)cnt[p.categoria]++;});
   const totalFilt=filtrados.length;
   $('cpills').innerHTML=
-    '<button class="cp '+(curCat==='all'?'on':'')+'" data-action="setCat" data-cat="all"><span class="cdot" style="background:#94a3b8"></span>Todo '+productos.length+'</button>'+
+    '<button class="cp '+(curCat==='all'?'on':'')+'" data-action="setCat" data-cat="all"><span class="cdot" style="background:#94a3b8"></span>Todo '+totalFilt+'</button>'+
     CATS.map((c,i)=>'<button class="cp '+(curCat===c?'on':'')+'" data-action="setCat" data-cat="'+c+'"><span class="cdot" style="background:'+CC[i]+'"></span>'+c.split(' ')[0]+' '+cnt[c]+'</button>').join('');
 }
 
