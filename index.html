@@ -73,12 +73,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .home-hdr{padding:14px 14px 6px;text-align:center;flex-shrink:0}
 .home-logo{font-size:20px;font-weight:700;color:var(--accent);font-family:monospace}
 .home-store{font-size:12px;color:var(--muted);margin-top:2px}
-.home-pills{display:flex;gap:6px;justify-content:center;margin-top:8px}
-.hp{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
-.hp-r{background:rgba(239,68,68,.15);color:#f87171}
-.hp-g{background:var(--bg3);color:var(--muted)}
-.hp-w{background:rgba(245,158,11,.12);color:#fbbf24}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 12px;flex:1}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;flex:1}
 .gc{border-radius:16px;padding:18px 16px;cursor:pointer;transition:transform .12s,opacity .12s;display:flex;flex-direction:column;justify-content:space-between;min-height:120px;position:relative}
 .gc:active{transform:scale(.95);opacity:.85}
 .gc-ico{font-size:26px;margin-bottom:6px}
@@ -818,18 +814,12 @@ function buildHome(){
   const urg=productos.filter(p=>est(p)==='u').length;
   const p25=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=25;}).length;
   const total=productos.length;
-  const ahorroTotal=reducciones.reduce((sum,r)=>sum+(r.precio_reducido||0)*r.unidades,0);
 
-  // Actualizar header pills
-  $('hp-urg').textContent=urg;
-  $('hp-25').textContent=p25;
-  $('hp-tot').textContent=total;
-  $('hurg').textContent=urg;
-  $('htot').textContent=total;
-  const nb=$('nb-badge');
-  if(urg>0){nb.textContent=urg;nb.classList.add('on');}else nb.classList.remove('on');
+  // Actualizar sync y store
+  const hs=document.getElementById('hstore2');
+  if(hs&&tienda) hs.textContent=tienda.nombre;
 
-  // Grid home
+  // Grid home — 4 botones simples
   $('home-grid').innerHTML=`
     <div class="gc gc1" data-action="goLista" data-sf="urg">
       <span class="gc-arr">›</span>
@@ -849,23 +839,11 @@ function buildHome(){
       <div class="gc-val">${total}</div>
       <div class="gc-lbl">Todos los<br>productos</div>
     </div>
-    <div class="gc gc4" data-action="goRed">
+    <div class="gc gc4" data-action="openNew">
       <span class="gc-arr">›</span>
-      <div class="gc-ico">📉</div>
-      <div class="gc-val">${reducciones.length}</div>
-      <div class="gc-lbl">Reducciones<br>registradas</div>
-    </div>
-    <div class="gc gc5" data-action="goAnalisis">
-      <span class="gc-arr">›</span>
-      <div class="gc-ico">📊</div>
-      <div class="gc-val">${ahorroTotal>0?'€'+ahorroTotal.toFixed(0):'—'}</div>
-      <div class="gc-lbl">Dinero<br>recuperado</div>
-    </div>
-    <div class="gc gc6" data-action="goLista" data-sf="all" data-cat="all">
-      <span class="gc-arr">›</span>
-      <div class="gc-ico">🏷️</div>
-      <div class="gc-val">${CATS.length}</div>
-      <div class="gc-lbl">Por<br>categoría</div>
+      <div class="gc-ico">➕</div>
+      <div class="gc-val"></div>
+      <div class="gc-lbl">Añadir<br>producto</div>
     </div>`;
 }
 
@@ -876,7 +854,7 @@ function goPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
   $(`pg-${id}`).classList.add('on');
-  const nbMap={home:'nb-home',scan:'nb-scan',search:'nb-search',exp:'nb-exp',cfg:'nb-cfg'};
+  const nbMap={home:'nb-home',scan:'nb-scan',red:'nb-red',exp:'nb-exp',cfg:'nb-cfg'};
   if(nbMap[id]) $(nbMap[id]).classList.add('on');
   if(id==='home') buildHome();
   if(id==='exp') buildExp();
@@ -1568,6 +1546,7 @@ document.addEventListener('click', function(e){
   else if(a==='goRed') goRed();
   else if(a==='goAnalisis') goAnalisis();
   else if(a==='setCat') setCat(cat||'all');
+  else if(a==='openNew') openNew();
 });
 
 // ═══════════════════════════════════════════════════════
@@ -1588,7 +1567,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // Nav
   document.getElementById('nb-home').addEventListener('click', ()=>goPage('home'));
   document.getElementById('nb-scan').addEventListener('click', ()=>goPage('scan'));
-  document.getElementById('nb-search').addEventListener('click', ()=>goPage('search'));
+  document.getElementById('nb-red').addEventListener('click', ()=>goPage('red'));
   document.getElementById('nb-exp').addEventListener('click', ()=>goPage('exp'));
   document.getElementById('nb-cfg').addEventListener('click', ()=>goPage('cfg'));
 
