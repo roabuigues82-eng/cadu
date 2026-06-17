@@ -735,9 +735,6 @@ function goPage(id){
 
 function goLista(sf='all', cat='all'){
   curSF=sf; curCat=cat;
-  ['all','25','urg','p'].forEach(x=>$('sf-'+x).classList.remove('on'));
-  const m={all:'all',urg:'urg',p25:'25',p:'p'};
-  if(m[sf]) $('sf-'+m[sf]).classList.add('on');
   const titles={all:'Todos los productos',urg:'Urgentes (<7 días)',p25:'Caducan en 25 días',p:'Próximos (<30 días)'};
   const lt=$('lista-title'); if(lt) lt.textContent=titles[sf]||'Productos';
   buildCats(); applyF();
