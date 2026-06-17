@@ -295,7 +295,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 <!-- APP -->
 <div id="app">
   <div class="hdr">
-    <button id="nb-home-hdr" style="background:transparent;border:none;cursor:pointer;font-size:18px;font-weight:800;color:#fff;font-family:monospace;letter-spacing:-1px;display:flex;align-items:center;gap:6px;padding:0">🏠 <span id="hstore-name">—</span></button>
+    <button id="btn-home-hdr" style="background:transparent;border:none;cursor:pointer;font-size:17px;font-weight:800;color:#fff;font-family:inherit;display:flex;align-items:center;gap:6px;padding:0;letter-spacing:-.3px">🏠 Home</button>
     <span class="hdr-store" id="hstore" style="margin-left:auto;cursor:pointer">⚙️ Ajustes</span>
     <span class="sync" id="sync" style="margin-left:8px"></span>
   </div>
@@ -451,7 +451,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 
   <!-- NAV -->
   <nav class="nav">
-    
     <button class="nb" id="nb-scan"><span class="nb-ico">📷</span><span>Escanear</span></button>
     <button class="nb" id="nb-red"><span class="nb-ico">📉</span><span>Reducciones</span></button>
     <button class="nb" id="nb-exp"><span class="nb-ico">📤</span><span>Exportar</span></button>
@@ -1292,6 +1291,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Login
   $('lbtn').addEventListener('click', doLogin);
+  const btnHome=document.getElementById('btn-home-hdr'); if(btnHome) btnHome.addEventListener('click', ()=>goPage('home'));
   $('lp').addEventListener('keydown', e=>{if(e.key==='Enter') doLogin();});
   $('lu').addEventListener('keydown', e=>{if(e.key==='Enter') $('lp').focus();});
 
@@ -1299,7 +1299,6 @@ document.addEventListener('DOMContentLoaded',function(){
   $('hstore').addEventListener('click', ()=>goPage('cfg'));
 
   // Nav
-  const nbhh=document.getElementById('nb-home-hdr'); if(nbhh) nbhh.addEventListener('click', ()=>goPage('home'));
   $('nb-scan').addEventListener('click', ()=>goPage('scan'));
   $('nb-red').addEventListener('click', ()=>goPage('red'));
   $('nb-exp').addEventListener('click', ()=>goPage('exp'));
