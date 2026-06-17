@@ -295,9 +295,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 <!-- APP -->
 <div id="app">
   <div class="hdr">
-    <span class="hdr-logo">CaduTEDI</span>
-    <span class="hdr-store" id="hstore" style="cursor:pointer;margin-left:auto">⚙️ Ajustes</span>
-    <div class="hdr-r"><span class="sync" id="sync"></span></div>
+    <span class="hdr-logo" id="hstore-name">—</span>
+    <span class="hdr-store" id="hstore" style="margin-left:auto;cursor:pointer">⚙️ Ajustes</span>
+    <span class="sync" id="sync" style="margin-left:8px"></span>
   </div>
   <div class="pages">
 
@@ -324,7 +324,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
         </div>
       </div>
       <div class="cpills" id="cpills"></div>
-      
+      <div class="sbar">
+        <button class="sbtn on" id="sf-all">Todos</button>
+        <button class="sbtn" id="sf-25">⏰ 25d</button>
+        <button class="sbtn" id="sf-urg">🔴 Urgentes</button>
+        <button class="sbtn" id="sf-p">🟡 &lt;30d</button>
+      </div>
       <div class="plist" id="plist"></div>
     </div>
 
@@ -634,8 +639,8 @@ function doLogout(){
 async function enterApp(){
   $('login').style.display='none';
   $('app').classList.add('show');
-  $('hstore').textContent='⚙️ Ajustes';
-  $('cfg-store').textContent=tienda.nombre;
+  const hn=document.getElementById('hstore-name'); if(hn) hn.textContent=tienda.nombre; $('hstore').textContent='⚙️ Ajustes';
+  const cs=document.getElementById('cfg-store'); if(cs) cs.textContent=tienda.nombre;
   await Promise.all([loadProductos(), loadReducciones()]);
   buildHome();
   scheduleNotifications();
@@ -650,7 +655,8 @@ async function loadProductos(){
     if(error) throw error;
     productos=(rows||[]).map(r=>({id:r.id,nombre:r.nombre,codigo:r.codigo||'',fecha:r.fecha,categoria:r.categoria||'Chuches y gominolas',precio:r.precio,tienda_id:r.tienda_id}));
     setSyncing(true);
-    buildHome();
+    if(!productos.length) offerImport();
+    else { buildHome(); }
   }catch(e){ console.error(e); toast('⚠ Sin conexión',3000); setSyncing(false); }
 }
 
@@ -664,7 +670,21 @@ async function loadReducciones(){
   }catch(e){ console.error(e); reducciones=[]; }
 }
 
+function offerImport(){
+  if(confirm('Esta tienda no tiene productos.\n¿Importar '+BASE.length+' productos del catálogo base?')) importBase();
+}
 
+async function importBase(){
+  toast('⏳ Importando...', 15000);
+  const rows=BASE.map(r=>({tienda_id:tienda.id,nombre:r[0],codigo:r[1]||'',fecha:r[2]||null,categoria:r[3]||'Chuches y gominolas',precio:r[4]||null}));
+  for(let i=0;i<rows.length;i+=100){
+    const {error}=await sb.from('productos').insert(rows.slice(i,i+100));
+    if(error){toast('⚠ Error importando');return;}
+  }
+  toast('✅ '+rows.length+' productos importados');
+  await loadProductos();
+  buildHome();
+}
 
 // ═══════════════════════════════════════════
 // NOTIFICACIONES
@@ -694,7 +714,7 @@ function buildHome(){
   const total=productos.length;
   const ht=$('home-title'), hs=$('home-sub');
   if(ht) ht.textContent='Hola, '+tienda.nombre;
-  if(hs) hs.textContent='Sin caducidades, sin pérdidas. Tú lo haces posible';
+  if(hs) hs.textContent=total+' productos · '+urg+' urgentes · '+p25+' en 25d';
   $('home-grid').innerHTML=
     '<div class="gc gc1" data-action="goLista" data-sf="urg"><span class="gc-arr">›</span><div class="gc-ico">🔴</div><div class="gc-val">'+urg+'</div><div class="gc-lbl">Urgentes &lt;7d</div></div>'+
     '<div class="gc gc2" data-action="go25"><span class="gc-arr">›</span><div class="gc-ico">⏰</div><div class="gc-val">'+p25+'</div><div class="gc-lbl">Caducan en 25d</div></div>'+
@@ -719,6 +739,9 @@ function goPage(id){
 
 function goLista(sf='all', cat='all'){
   curSF=sf; curCat=cat;
+  ['all','25','urg','p'].forEach(x=>$('sf-'+x).classList.remove('on'));
+  const m={all:'all',urg:'urg',p25:'25',p:'p'};
+  if(m[sf]) $('sf-'+m[sf]).classList.add('on');
   const titles={all:'Todos los productos',urg:'Urgentes (<7 días)',p25:'Caducan en 25 días',p:'Próximos (<30 días)'};
   const lt=$('lista-title'); if(lt) lt.textContent=titles[sf]||'Productos';
   buildCats(); applyF();
@@ -733,17 +756,9 @@ function go25(){ goLista('p25','all'); }
 // ═══════════════════════════════════════════
 function buildCats(){
   const cnt={}; CATS.forEach(c=>cnt[c]=0);
-  const filtrados=productos.filter(p=>{
-    const e=est(p);
-    if(curSF==='urg'&&e!=='u') return false;
-    if(curSF==='p25'&&!['u','p25'].includes(e)) return false;
-    if(curSF==='p'&&!['u','p25','p'].includes(e)) return false;
-    return true;
-  });
-  filtrados.forEach(p=>{if(cnt[p.categoria]!==undefined)cnt[p.categoria]++;});
-  const totalFilt=filtrados.length;
+  productos.forEach(p=>{if(cnt[p.categoria]!==undefined)cnt[p.categoria]++;});
   $('cpills').innerHTML=
-    '<button class="cp '+(curCat==='all'?'on':'')+'" data-action="setCat" data-cat="all"><span class="cdot" style="background:#94a3b8"></span>Todo '+totalFilt+'</button>'+
+    '<button class="cp '+(curCat==='all'?'on':'')+'" data-action="setCat" data-cat="all"><span class="cdot" style="background:#94a3b8"></span>Todo '+productos.length+'</button>'+
     CATS.map((c,i)=>'<button class="cp '+(curCat===c?'on':'')+'" data-action="setCat" data-cat="'+c+'"><span class="cdot" style="background:'+CC[i]+'"></span>'+c.split(' ')[0]+' '+cnt[c]+'</button>').join('');
 }
 
@@ -1288,6 +1303,7 @@ document.addEventListener('DOMContentLoaded',function(){
   $('nb-scan').addEventListener('click', ()=>goPage('scan'));
   $('nb-red').addEventListener('click', ()=>goPage('red'));
   $('nb-exp').addEventListener('click', ()=>goPage('exp'));
+  $('nb-cfg').addEventListener('click', ()=>goPage('cfg'));
 
   // Back buttons
   $('back-lista').addEventListener('click', ()=>goPage('home'));
@@ -1296,7 +1312,10 @@ document.addEventListener('DOMContentLoaded',function(){
   // Lista
   $('sq').addEventListener('input', applyF);
   $('btn-add-lista').addEventListener('click', openNew);
-
+  $('sf-all').addEventListener('click', ()=>setSF('all'));
+  $('sf-25').addEventListener('click', ()=>setSF('p25'));
+  $('sf-urg').addEventListener('click', ()=>setSF('urg'));
+  $('sf-p').addEventListener('click', ()=>setSF('p'));
 
   // Buscar - acceso desde scanner buscar manualmente
   const nb_search_btn = document.querySelector('[data-page="search"]');
@@ -1351,24 +1370,6 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Sesion
   if(checkSession()) enterApp();
-
-  // Exponer funciones para data-action
-  window.goLista = goLista;
-  window.go25 = go25;
-  window.openNew = openNew;
-  window.openEdit = openEdit;
-  window.setCat = setCat;
-  window.closeProd = closeProd;
-  window.closeRed = closeRed;
-  window.exportRedCSV = exportRedCSV;
-  window.exportRedXLSX = exportRedXLSX;
-  window.doSearch = doSearch;
-  window.closeProd = closeProd;
-  window.saveItem = saveItem;
-  window.deleteItem = deleteItem;
-  window.openReducir = openReducir;
-  window.closeRed = closeRed;
-  window.saveReduccion = saveReduccion;
 });
 </script>
 </body>
