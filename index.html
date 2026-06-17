@@ -521,7 +521,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="mdrag"></div>
     <h3>Registrar reducción</h3>
     <div style="background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--muted)" id="red-prod-info"></div>
-    <div class="mf"><label>Precio reducido (€)</label><input id="r-precio" type="number" step="0.05" inputmode="decimal" placeholder="0.00"></div>
+    <div class="mf"><label>Precio de partida (€) <span style="color:var(--muted);font-weight:400">— precio antes de esta reducción</span></label><input id="r-precio-orig" type="number" step="0.05" inputmode="decimal" placeholder="0.00"></div>
+    <div class="mf"><label>Nuevo precio reducido (€)</label><input id="r-precio" type="number" step="0.05" inputmode="decimal" placeholder="0.00"></div>
     <div class="mf"><label>Unidades reducidas</label><input id="r-unidades" type="number" inputmode="numeric" placeholder="1" min="1"></div>
     <div class="mf"><label>Fecha de reducción</label><input id="r-fecha" type="date"></div>
     <div class="mbtns">
@@ -970,7 +971,18 @@ function openReducir(){
   const p=productos.find(x=>x.id==editId); if(!p)return;
   redProdId=editId;
   closeProd();
-  $('red-prod-info').innerHTML=`<b>${p.nombre}</b><br>Precio original: <b>${p.precio!=null?p.precio.toFixed(2)+'€':'—'}</b> · Caduca: <b>${fmt(p.fecha)}</b>`;
+  // Buscar última reducción de este producto para usar como precio de partida
+  const ultimaRed=reducciones.find(r=>r.producto_id==p.id);
+  const precioPartida=ultimaRed?ultimaRed.precio_reducido:(p.precio||0);
+  const historial=reducciones.filter(r=>r.producto_id==p.id);
+  let infoHtml=`<b>${p.nombre}</b><br>`;
+  if(historial.length>0){
+    infoHtml+=`<span style="color:var(--warn)">⚠ Ya reducido ${historial.length} vez${historial.length>1?'es':''}</span><br>`;
+    infoHtml+=`Última reducción: <b>${ultimaRed.precio_reducido?.toFixed(2)}€</b> · `;
+  }
+  infoHtml+=`Precio original: <b>${p.precio!=null?p.precio.toFixed(2)+'€':'—'}</b> · Caduca: <b>${fmt(p.fecha)}</b>`;
+  $('red-prod-info').innerHTML=infoHtml;
+  $('r-precio-orig').value=precioPartida.toFixed(2);
   $('r-precio').value='';
   $('r-unidades').value='1';
   $('r-fecha').value=hoy();
@@ -981,16 +993,18 @@ function closeRed(){ $('modal-red').classList.remove('on'); }
 
 async function saveReduccion(){
   const p=productos.find(x=>x.id==redProdId); if(!p)return;
+  const precio_original=parseFloat($('r-precio-orig').value)||(p.precio||0);
   const precio_reducido=parseFloat($('r-precio').value);
   const unidades=parseInt($('r-unidades').value)||1;
   const fecha_reduccion=$('r-fecha').value;
   if(!precio_reducido||precio_reducido<=0){toast('⚠ Introduce el precio reducido');return;}
+  if(precio_reducido>=precio_original){toast('⚠ El precio reducido debe ser menor que el precio de partida');return;}
   try{
     const item={
       tienda_id:tienda.id,
       producto_id:p.id,
       producto_nombre:p.nombre,
-      precio_original:p.precio||0,
+      precio_original:precio_original,
       precio_reducido,
       unidades,
       fecha_reduccion,
@@ -1000,8 +1014,9 @@ async function saveReduccion(){
     const {data:row,error}=await sb.from('reducciones').insert(item).select().single();
     if(error)throw error;
     reducciones.unshift(row);
-    const ahorro=((p.precio||0)-precio_reducido)*unidades;
-    toast(`✅ Reducción registrada · Pérdida evitada: ${ahorro.toFixed(2)}€`);
+    const recuperado=precio_reducido*unidades;
+    const descuento=(precio_original-precio_reducido)*unidades;
+    toast(`✅ Reducción registrada · Recuperado: ${recuperado.toFixed(2)}€ · Descuento: ${descuento.toFixed(2)}€`);
     closeRed(); buildHome(); buildRed();
   }catch(e){console.error(e);toast('⚠ Error al registrar');}
 }
@@ -1371,7 +1386,8 @@ function exportPDF(){
   const css='body{font-family:Arial,sans-serif;font-size:11px;margin:20px}h1{font-size:16px;color:#f97316}p{color:#666;font-size:11px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#f97316;color:#fff;padding:6px 8px;text-align:left}td{padding:5px 8px;border-bottom:1px solid #eee}tr:nth-child(even) td{background:#fafafa}';
   const head='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CaduTEDI</title><style>'+css+'</style></head><body>';
   const body='<h1>CaduTEDI - '+titulo+'</h1><p>Tienda: '+tiendaNombre+' - '+fechaHoy+' - '+f.length+' productos</p><table><thead><tr><th>Nombre</th><th>Caducidad</th><th>Dias</th><th>Estado</th><th>Categoria</th><th>Precio</th></tr></thead><tbody>'+filas+'</tbody></table>';
-  const foot='</body></html>';
+  const foot='
+</body></html>';
   win.document.write(head+body+foot);
   win.document.close();
   setTimeout(function(){win.print();},500);
