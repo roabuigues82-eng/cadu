@@ -1366,6 +1366,18 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Sesion
   if(checkSession()) enterApp();
+
+  // Exponer funciones para data-action
+  window.goLista = goLista;
+  window.go25 = go25;
+  window.openNew = openNew;
+  window.openEdit = openEdit;
+  window.setCat = setCat;
+  window.closeProd = closeProd;
+  window.closeRed = closeRed;
+  window.exportRedCSV = exportRedCSV;
+  window.exportRedXLSX = exportRedXLSX;
+  window.doSearch = doSearch;
 });
 </script>
 </body>
