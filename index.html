@@ -320,9 +320,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 
     <!-- HOME -->
     <div class="page on" id="pg-home">
-      
       <div class="grid" id="home-grid"></div>
-      <button class="fab" id="fab">＋</button>
     </div>
 
     <!-- LISTA PRODUCTOS -->
@@ -673,7 +671,7 @@ async function enterApp(){
   document.getElementById('login').style.display='none';
   document.getElementById('app').classList.add('show');
   document.getElementById('hstore').textContent=tienda.nombre;
-  document.getElementById('hstore2').textContent=tienda.nombre;
+  const hs2=document.getElementById('hstore2'); if(hs2) hs2.textContent=tienda.nombre;
   document.getElementById('cfg-store').textContent=tienda.nombre;
   await Promise.all([loadProductos(), loadReducciones()]);
   buildHome();
@@ -808,8 +806,7 @@ function buildHome(){
   const total=productos.length;
 
   // Actualizar sync y store
-  const hs=document.getElementById('hstore2');
-  if(hs&&tienda) hs.textContent=tienda.nombre;
+  const hs=document.getElementById('hstore2'); if(hs&&tienda) hs.textContent=tienda.nombre;
 
   // Grid home — 4 botones simples
   $('home-grid').innerHTML=`
