@@ -11,13 +11,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#0f0f11;--bg2:#18181c;--bg3:#1e1e24;
-  --border:#2e2e38;--accent:#f97316;
-  --text:#f1f0ed;--muted:#6b7280;
+  --bg:#0a1628;--bg2:#112240;--bg3:#1a3a5c;
+  --border:#1e4976;--accent:#fbbf24;
+  --text:#f0f4ff;--muted:#8bb4d4;
   --danger:#ef4444;--warn:#f59e0b;--ok:#22c55e;
-  --info:#3b82f6;--purple:#8b5cf6;
-  --c1:#f97316;--c2:#3b82f6;--c3:#22c55e;
-  --c4:#a855f7;--c5:#ec4899;--c6:#f59e0b;--c7:#14b8a6;
+  --info:#60a5fa;--purple:#a78bfa;
+  --c1:#fbbf24;--c2:#60a5fa;--c3:#22c55e;
+  --c4:#a78bfa;--c5:#f472b6;--c6:#fb923c;--c7:#2dd4bf;
   --sb:env(safe-area-inset-bottom,0px);
   --st:env(safe-area-inset-top,0px);
   --nav:58px;
@@ -33,7 +33,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .l-lbl{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:5px}
 .l-inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:16px;outline:none;font-family:inherit;-webkit-appearance:none;margin-bottom:14px;transition:border-color .15s}
 .l-inp:focus{border-color:var(--accent)}
-.l-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
+.l-btn{width:100%;background:var(--accent);color:#0a1628;border:none;border-radius:12px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
 .l-btn:active{opacity:.85}
 .l-err{color:#f87171;font-size:13px;text-align:center;margin-top:10px;min-height:18px}
 
@@ -57,7 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .page.on{display:flex}
 
 /* ── NAV ── */
-.nav{height:calc(var(--nav) + var(--sb));padding-bottom:var(--sb);background:rgba(24,24,28,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;flex-shrink:0;z-index:100}
+.nav{height:calc(var(--nav) + var(--sb));padding-bottom:var(--sb);background:rgba(10,22,40,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;flex-shrink:0;z-index:100}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--muted);font-size:9px;font-weight:500;cursor:pointer;font-family:inherit;position:relative;transition:color .15s}
 .nb:active{transform:scale(.9)}
 .nb.on{color:var(--accent)}
@@ -85,13 +85,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .gc-val{font-size:34px;font-weight:700;line-height:1;margin-bottom:2px}
 .gc-lbl{font-size:12px;font-weight:500;opacity:.9;line-height:1.3}
 .gc-arr{position:absolute;top:12px;right:14px;font-size:16px;opacity:.45}
-.gc1{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
-.gc2{background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff}
-.gc3{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff}
+.gc1{background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff}
+.gc2{background:linear-gradient(135deg,#d97706,#fbbf24);color:#0a1628}
+.gc3{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff}
 .gc4{background:linear(135deg,#6d28d9,#8b5cf6);color:#fff}
-.gc4{background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:#fff}
-.gc5{background:linear-gradient(135deg,#065f46,#10b981);color:#fff}
-.gc6{background:linear-gradient(135deg,#be185d,#ec4899);color:#fff}
+.gc4{background:linear-gradient(135deg,#1e4076,#2563eb);color:#fff}
+.gc5{background:linear-gradient(135deg,#d97706,#fbbf24);color:#0a1628}
+.gc6{background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff}
 .fab{position:fixed;bottom:calc(var(--nav) + var(--sb) + 14px);right:16px;width:54px;height:54px;border-radius:27px;background:var(--accent);color:#fff;border:none;font-size:24px;cursor:pointer;z-index:150;box-shadow:0 4px 16px rgba(249,115,22,.5);display:flex;align-items:center;justify-content:center;transition:transform .15s}
 .fab:active{transform:scale(.9)}
 
@@ -281,7 +281,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .mb-green{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)!important}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:calc(var(--nav) + var(--sb) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:rgba(28,28,34,.97);border:1px solid var(--border);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:500;z-index:1000;box-shadow:0 4px 24px rgba(0,0,0,.5);opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none}
+.toast{position:fixed;bottom:calc(var(--nav) + var(--sb) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:rgba(10,22,40,.97);border:1px solid var(--border);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:500;z-index:1000;box-shadow:0 4px 24px rgba(0,0,0,.5);opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none}
 .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
 
 /* notif banner */
@@ -748,20 +748,66 @@ async function importBase(){
 // NOTIFICACIONES
 // ═══════════════════════════════════════════════════════
 function scheduleNotifications(){
-  if(!'Notification' in window||Notification.permission!=='granted') return;
-  const alerta25=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=23&&d<=25;});
-  const alerta15=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=13&&d<=15;});
-  if(alerta25.length){
-    new Notification('⚠ CaduTEDI — Reducir pronto',{
-      body:`${alerta25.length} producto${alerta25.length>1?'s':'' } caducan en ~25 días: ${alerta25.slice(0,2).map(p=>p.nombre).join(', ')}...`,
-      icon:'/favicon.ico'
-    });
+  if(!('Notification' in window)) return;
+  if(Notification.permission!=='granted') return;
+
+  // Cancelar timer anterior si existe
+  if(window._notifTimer) clearTimeout(window._notifTimer);
+
+  // Calcular milisegundos hasta las 9:00 de mañana (o hoy si aún no son las 9)
+  function msHasta9(){
+    const ahora=new Date();
+    const target=new Date();
+    target.setHours(9,0,0,0);
+    if(ahora>=target) target.setDate(target.getDate()+1); // si ya pasaron las 9, mañana
+    return target-ahora;
   }
-  if(alerta15.length){
-    new Notification('🔴 CaduTEDI — REDUCIR AHORA',{
-      body:`${alerta15.length} producto${alerta15.length>1?'s':'' } caducan en ~15 días: ${alerta15.slice(0,2).map(p=>p.nombre).join(', ')}...`,
-      icon:'/favicon.ico'
-    });
+
+  function enviarNotificaciones(){
+    const urgentes=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=7;})
+      .sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0));
+    const prox25=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>7&&d<=25;})
+      .sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0));
+
+    // Notificación urgentes
+    if(urgentes.length){
+      const lista=urgentes.slice(0,5).map(p=>`${p.nombre} (${dias(p.fecha)}d)`).join(', ');
+      new Notification('🔴 CaduTEDI — Caducan esta semana', {
+        body:`${urgentes.length} producto${urgentes.length>1?'s':''}: ${lista}`,
+        icon:'/favicon.ico',
+        tag:'cadutedi-urgentes'
+      });
+    }
+
+    // Notificación próximos 25 días (separada, 2 segundos después)
+    if(prox25.length){
+      setTimeout(()=>{
+        const lista=prox25.slice(0,5).map(p=>`${p.nombre} (${dias(p.fecha)}d)`).join(', ');
+        new Notification('⚠ CaduTEDI — Reducir pronto', {
+          body:`${prox25.length} producto${prox25.length>1?'s':''} caducan en 25 días: ${lista}`,
+          icon:'/favicon.ico',
+          tag:'cadutedi-prox25'
+        });
+      }, 2000);
+    }
+
+    // Reprogramar para mañana a las 9:00
+    window._notifTimer=setTimeout(enviarNotificaciones, msHasta9());
+  }
+
+  // Programar primera ejecución
+  const ms=msHasta9();
+  const horasRestantes=Math.round(ms/3600000*10)/10;
+  console.log(`Notificaciones programadas en ${horasRestantes}h (a las 9:00)`);
+  window._notifTimer=setTimeout(enviarNotificaciones, ms);
+
+  // Si ya son las 9:00 y no se han enviado hoy, enviar ahora
+  const ahora=new Date();
+  const ultimaNotif=localStorage.getItem('cadutedi_last_notif');
+  const hoyStr=ahora.toDateString();
+  if(ahora.getHours()>=9 && ultimaNotif!==hoyStr){
+    localStorage.setItem('cadutedi_last_notif', hoyStr);
+    enviarNotificaciones();
   }
 }
 
