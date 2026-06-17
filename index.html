@@ -651,8 +651,7 @@ async function loadProductos(){
     if(error) throw error;
     productos=(rows||[]).map(r=>({id:r.id,nombre:r.nombre,codigo:r.codigo||'',fecha:r.fecha,categoria:r.categoria||'Chuches y gominolas',precio:r.precio,tienda_id:r.tienda_id}));
     setSyncing(true);
-    if(!productos.length) offerImport();
-    else { buildHome(); }
+    buildHome();
   }catch(e){ console.error(e); toast('⚠ Sin conexión',3000); setSyncing(false); }
 }
 
@@ -666,21 +665,7 @@ async function loadReducciones(){
   }catch(e){ console.error(e); reducciones=[]; }
 }
 
-function offerImport(){
-  if(confirm('Esta tienda no tiene productos.\n¿Importar '+BASE.length+' productos del catálogo base?')) importBase();
-}
 
-async function importBase(){
-  toast('⏳ Importando...', 15000);
-  const rows=BASE.map(r=>({tienda_id:tienda.id,nombre:r[0],codigo:r[1]||'',fecha:r[2]||null,categoria:r[3]||'Chuches y gominolas',precio:r[4]||null}));
-  for(let i=0;i<rows.length;i+=100){
-    const {error}=await sb.from('productos').insert(rows.slice(i,i+100));
-    if(error){toast('⚠ Error importando');return;}
-  }
-  toast('✅ '+rows.length+' productos importados');
-  await loadProductos();
-  buildHome();
-}
 
 // ═══════════════════════════════════════════
 // NOTIFICACIONES
