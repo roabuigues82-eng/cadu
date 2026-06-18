@@ -1185,14 +1185,14 @@ function exportPDF(){
   const porCat={};
   f.forEach(p=>{if(!porCat[p.categoria])porCat[p.categoria]=[];porCat[p.categoria].push(p);});
   const filas=Object.entries(porCat).map(([cat,prods])=>
-    '<tr><td colspan="5" style="background:#0369a1;color:#fff;font-weight:700;padding:8px;font-size:12px">'+cat+' ('+prods.length+')</td></tr>'+
+    '<tr><td colspan="4" style="background:#0369a1;color:#fff;font-weight:700;padding:8px;font-size:12px">'+cat+' ('+prods.length+')</td></tr>'+
     prods.map(p=>'<tr><td>'+p.nombre+'</td><td style="text-align:center;font-family:monospace">'+fmt(p.fecha)+'</td><td style="text-align:center">'+(dias(p.fecha)??'')+'</td><td>'+estL(est(p))+'</td><td style="text-align:right">'+(p.precio!=null?p.precio.toFixed(2)+'€':'')+'</td></tr>').join('')
   ).join('');
   const win=window.open('','_blank');
   if(!win){toast('Activa ventanas emergentes');return;}
   const css='body{font-family:Arial,sans-serif;font-size:11px;margin:20px;color:#0c4a6e}h1{font-size:16px;color:#0369a1;margin-bottom:4px}p{color:#0369a1;font-size:11px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#0369a1;color:#fff;padding:6px 8px;text-align:left}td{padding:5px 8px;border-bottom:1px solid #e0f2fe}tr:nth-child(even) td{background:#f0f9ff}';
   const head='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Caducidades</title><style>'+css+'</style></head><body>';
-  const body='<h1>Caducidades — '+titulo+'</h1><p>Tienda: '+(tienda?tienda.nombre:'')+' — '+new Date().toLocaleDateString('es-ES')+' — '+f.length+' productos</p><table><thead><tr><th>Nombre</th><th>Caducidad</th><th>Días</th><th>Estado</th><th>Categoría</th><th>Precio</th></tr></thead><tbody>'+filas+'</tbody></table>';
+  const body='<h1>Caducidades — '+titulo+'</h1><p>Tienda: '+(tienda?tienda.nombre:'')+' — '+new Date().toLocaleDateString('es-ES')+' — '+f.length+' productos</p><table><thead><tr><th>Nombre</th><th>Caducidad</th><th>Días</th><th>Estado</th><th>Precio</th></tr></thead><tbody>'+filas+'</tbody></table>';
   const foot='</body></html>';
   win.document.write(head+body+foot);
   win.document.close();
