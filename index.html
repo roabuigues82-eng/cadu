@@ -1494,6 +1494,29 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Sesion
   if(checkSession()) enterApp();
+
+  // Exponer funciones globalmente
+  window.goLista = goLista;
+  window.go25 = go25;
+  window.openNew = openNew;
+  window.openEdit = openEdit;
+  window.setCat = setCat;
+  window.closeProd = closeProd;
+  window.saveItem = saveItem;
+  window.deleteItem = deleteItem;
+  window.openReducir = openReducir;
+  window.closeRed = closeRed;
+  window.saveReduccion = saveReduccion;
+  window.openEditRed = openEditRed;
+  window.closeRedEdit = closeRedEdit;
+  window.saveRedEdit = saveRedEdit;
+  window.deleteRed = deleteRed;
+  window.openChangePass = openChangePass;
+  window.closePass = closePass;
+  window.savePass = savePass;
+  window.exportRedCSV = exportRedCSV;
+  window.exportRedXLSX = exportRedXLSX;
+  window.doSearch = doSearch;
 });
 </script>
 </body>
