@@ -1346,7 +1346,7 @@ document.addEventListener('DOMContentLoaded',function(){
   $('nb-scan').addEventListener('click', ()=>goPage('scan'));
   $('nb-red').addEventListener('click', ()=>goPage('red'));
   $('nb-exp').addEventListener('click', ()=>goPage('exp'));
-  $('nb-cfg').addEventListener('click', ()=>goPage('cfg'));
+  const nbcfg=document.getElementById('nb-cfg'); if(nbcfg) nbcfg.addEventListener('click', ()=>goPage('cfg'));
 
   // Back buttons
   $('back-lista').addEventListener('click', ()=>goPage('home'));
