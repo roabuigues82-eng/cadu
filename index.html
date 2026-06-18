@@ -1410,7 +1410,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Lista
   $('sq').addEventListener('input', applyF);
-  $('btn-add-lista').addEventListener('click', openNew);
+  const bal=document.getElementById('btn-add-lista'); if(bal) bal.addEventListener('click', openNew);
   document.getElementById('btn-ver-todos').addEventListener('click', ()=>goLista('all','all'));
 
   // Buscar - acceso desde scanner buscar manualmente
