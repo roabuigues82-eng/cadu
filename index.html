@@ -315,6 +315,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
       <div class="pg-hdr">
         <button class="back-btn" id="back-lista">‹ Inicio</button>
         <span class="pg-title" style="margin-left:6px" id="lista-title">Productos</span>
+        <button id="btn-ver-todos" style="display:none;margin-left:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Ver todos</button>
         <button class="add-btn" id="btn-add-lista" style="margin-left:auto">＋</button>
       </div>
       <div class="searchbar" style="padding:8px 12px">
@@ -780,6 +781,8 @@ function goLista(sf='all', cat='all'){
   if(m[sf]) $('sf-'+m[sf]).classList.add('on');
   const titles={all:'Todos los productos',urg:'Urgentes (<7 días)',p25:'Caducan en 25 días',p:'Próximos (<30 días)'};
   const lt=$('lista-title'); if(lt) lt.textContent=titles[sf]||'Productos';
+  const vt=document.getElementById('btn-ver-todos');
+  if(vt) vt.style.display=sf!=='all'?'block':'none';
   buildCats(); applyF();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   $('pg-lista').classList.add('on');
@@ -1409,6 +1412,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // Lista
   $('sq').addEventListener('input', applyF);
   $('btn-add-lista').addEventListener('click', openNew);
+  document.getElementById('btn-ver-todos').addEventListener('click', ()=>goLista('all','all'));
 
   // Buscar - acceso desde scanner buscar manualmente
   const nb_search_btn = document.querySelector('[data-page="search"]');
