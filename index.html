@@ -993,12 +993,6 @@ function buildRed(){
   const maxMes=Math.max(...Object.values(porMes).map(v=>v.rec),1);
 
   el.innerHTML=
-    '<div class="stats-grid">'+
-      '<div class="sbox info"><div class="sbox-val">'+totalRec.toFixed(2)+'€</div><div class="sbox-lbl">Dinero recuperado</div></div>'+
-      '<div class="sbox warn"><div class="sbox-val">'+totalDesc.toFixed(2)+'€</div><div class="sbox-lbl">Descuento aplicado</div></div>'+
-      '<div class="sbox"><div class="sbox-val">'+reducciones.length+'</div><div class="sbox-lbl">Reducciones</div></div>'+
-      '<div class="sbox ok"><div class="sbox-val">'+pct+'%</div><div class="sbox-lbl">% recuperado</div></div>'+
-    '</div>'+
     // Botones descarga
     '<div style="display:flex;gap:8px;padding:0 12px 8px">'+
       '<button onclick="exportRedCSV()" style="flex:1;background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text2)">📄 CSV</button>'+
