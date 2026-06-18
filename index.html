@@ -324,12 +324,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
         </div>
       </div>
       <div class="cpills" id="cpills"></div>
-      <div class="sbar">
-        <button class="sbtn on" id="sf-all">Todos</button>
-        <button class="sbtn" id="sf-25">⏰ 25d</button>
-        <button class="sbtn" id="sf-urg">🔴 Urgentes</button>
-        <button class="sbtn" id="sf-p">🟡 &lt;30d</button>
-      </div>
+      
       <div class="plist" id="plist"></div>
     </div>
 
@@ -1414,10 +1409,6 @@ document.addEventListener('DOMContentLoaded',function(){
   // Lista
   $('sq').addEventListener('input', applyF);
   $('btn-add-lista').addEventListener('click', openNew);
-  $('sf-all').addEventListener('click', ()=>setSF('all'));
-  $('sf-25').addEventListener('click', ()=>setSF('p25'));
-  $('sf-urg').addEventListener('click', ()=>setSF('urg'));
-  $('sf-p').addEventListener('click', ()=>setSF('p'));
 
   // Buscar - acceso desde scanner buscar manualmente
   const nb_search_btn = document.querySelector('[data-page="search"]');
