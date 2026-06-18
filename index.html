@@ -431,6 +431,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
             <div><div class="citem-t">Resetear productos</div><div class="citem-s">Volver al catálogo original</div></div>
             <span class="citem-arr">›</span>
           </div>
+          <div class="cfg-sec">Seguridad</div>
+          <div class="citem" id="btn-change-pass">
+            <div class="citem-ico">🔑</div>
+            <div><div class="citem-t">Cambiar contraseña</div><div class="citem-s">Personaliza tu acceso</div></div>
+            <span class="citem-arr">›</span>
+          </div>
           <div class="cfg-sec">Sesión</div>
           <div class="citem danger" id="btn-logout">
             <div class="citem-ico">🚪</div>
@@ -496,6 +502,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="mbtns">
       <button class="mb-c" id="mb-cancel-red">Cancelar</button>
       <button class="mb-s" id="mb-save-red">✅ Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+<div class="mbg" id="modal-pass">
+  <div class="modal">
+    <div class="mdrag"></div>
+    <h3>Cambiar contraseña</h3>
+    <div style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--muted2)">
+      La contraseña nueva solo la sabrás tú. Si la olvidas contacta con el administrador.
+    </div>
+    <div class="mf"><label>Contraseña actual</label><input id="p-actual" type="password" placeholder="••••••••"></div>
+    <div class="mf"><label>Nueva contraseña</label><input id="p-nueva" type="password" placeholder="Mínimo 4 caracteres"></div>
+    <div class="mf"><label>Confirmar nueva contraseña</label><input id="p-confirm" type="password" placeholder="Repite la nueva contraseña"></div>
+    <div class="mbtns">
+      <button class="mb-c" id="mb-cancel-pass">Cancelar</button>
+      <button class="mb-s" id="mb-save-pass">Cambiar</button>
     </div>
   </div>
 </div>
@@ -1262,6 +1286,35 @@ async function uploadRows(rows){
   await loadProductos(); buildHome();
 }
 
+function openChangePass(){
+  document.getElementById('p-actual').value='';
+  document.getElementById('p-nueva').value='';
+  document.getElementById('p-confirm').value='';
+  document.getElementById('modal-pass').classList.add('on');
+}
+
+function closePass(){ document.getElementById('modal-pass').classList.remove('on'); }
+
+async function savePass(){
+  const actual=(document.getElementById('p-actual').value||'').trim();
+  const nueva=(document.getElementById('p-nueva').value||'').trim();
+  const confirm=(document.getElementById('p-confirm').value||'').trim();
+  if(!actual||!nueva||!confirm){toast('⚠ Rellena todos los campos');return;}
+  if(nueva.length<4){toast('⚠ Mínimo 4 caracteres');return;}
+  if(nueva!==confirm){toast('⚠ Las contraseñas no coinciden');return;}
+  try{
+    // Verificar contraseña actual
+    const {data:rows,error}=await sb.from('tiendas').select('id').eq('id',tienda.id).eq('password',actual);
+    if(error) throw error;
+    if(!rows||!rows.length){toast('⚠ La contraseña actual no es correcta');return;}
+    // Actualizar
+    const {error:e2}=await sb.from('tiendas').update({password:nueva}).eq('id',tienda.id);
+    if(e2) throw e2;
+    toast('✅ Contraseña cambiada correctamente');
+    closePass();
+  }catch(e){console.error(e);toast('⚠ Error al cambiar la contraseña');}
+}
+
 async function resetData(){
   if(!confirm('¿Borrar todos los productos y volver al catálogo original?')) return;
   toast('⏳ Reseteando...',10000);
@@ -1360,6 +1413,10 @@ document.addEventListener('DOMContentLoaded',function(){
   // Ajustes
   $('f-imp').addEventListener('change',function(){ importFile(this); });
   $('btn-reset').addEventListener('click', resetData);
+  $('btn-change-pass').addEventListener('click', openChangePass);
+  $('mb-cancel-pass').addEventListener('click', closePass);
+  $('mb-save-pass').addEventListener('click', savePass);
+  document.getElementById('modal-pass').addEventListener('click', e=>{if(e.target===document.getElementById('modal-pass')) closePass();});
   $('btn-logout').addEventListener('click', doLogout);
 
   // Notificaciones
