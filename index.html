@@ -755,7 +755,7 @@ function buildHome(){
   const total=productos.length;
   const ht=$('home-title'), hs=$('home-sub');
   if(ht) ht.textContent='Hola, '+tienda.nombre;
-  if(hs) hs.textContent=total+' productos · '+urg+' urgentes · '+p25+' en 25d';
+  if(hs) hs.textContent='Sin caducidades, sin pérdidas. Tú lo haces posible';
   $('home-grid').innerHTML=
     '<div class="gc gc1" data-action="goLista" data-sf="urg"><span class="gc-arr">›</span><div class="gc-ico">🔴</div><div class="gc-val">'+urg+'</div><div class="gc-lbl">Urgentes &lt;7d</div></div>'+
     '<div class="gc gc2" data-action="go25"><span class="gc-arr">›</span><div class="gc-ico">⏰</div><div class="gc-val">'+p25+'</div><div class="gc-lbl">Caducan en 25d</div></div>'+
