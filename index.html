@@ -388,7 +388,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
       <div class="pg-hdr"><span class="pg-title">Exportar</span></div>
       <div class="scroll">
         <div class="exp-body">
-          
+          <div class="stats-grid" id="exp-stats"></div>
           <div class="sec-lbl">Filtrar</div>
           <div class="fpills">
             <button class="fp on" id="ef-todos">Todos</button>
@@ -520,6 +520,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="mbtns">
       <button class="mb-c" id="mb-cancel-pass">Cancelar</button>
       <button class="mb-s" id="mb-save-pass">Cambiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR REDUCCION -->
+<div class="mbg" id="modal-red-edit">
+  <div class="modal">
+    <div class="mdrag"></div>
+    <h3>Editar reducción</h3>
+    <div style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--muted2)" id="red-edit-info"></div>
+    <div class="mf"><label>Precio de partida (€)</label><input id="re-orig" type="number" step="0.05" inputmode="decimal"></div>
+    <div class="mf"><label>Precio reducido (€)</label><input id="re-precio" type="number" step="0.05" inputmode="decimal"></div>
+    <div class="mf"><label>Unidades</label><input id="re-unidades" type="number" inputmode="numeric" min="1"></div>
+    <div class="mf"><label>Fecha</label><input id="re-fecha" type="date"></div>
+    <div class="mbtns">
+      <button class="mb-d" id="mb-del-red">Eliminar</button>
+      <button class="mb-c" id="mb-cancel-red-edit">Cancelar</button>
+      <button class="mb-s" id="mb-save-red-edit">Guardar</button>
     </div>
   </div>
 </div>
@@ -1000,7 +1018,7 @@ function buildRed(){
       const rec=(r.precio_reducido||0)*r.unidades;
       const desc=((r.precio_original||0)-(r.precio_reducido||0))*r.unidades;
       const pctR=r.precio_original>0?Math.round((1-r.precio_reducido/r.precio_original)*100):0;
-      return '<div class="red-card">'+
+      return '<div class="red-card" data-action="openEditRed" data-id="'+r.id+'">'+
         '<div class="red-top"><div class="red-name">'+r.producto_nombre+'</div>'+
         '<div class="red-saving">'+rec.toFixed(2)+'€ recup.</div></div>'+
         '<div class="red-meta">'+
@@ -1139,7 +1157,16 @@ function reducirDesdeScanner(pid){ editId=pid; $('scan-res').innerHTML=''; openR
 // ═══════════════════════════════════════════
 // EXPORTAR
 // ═══════════════════════════════════════════
-function buildExp(){}
+function buildExp(){
+  const urg=productos.filter(p=>est(p)==='u').length;
+  const p25=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=25;}).length;
+  const cad=productos.filter(p=>est(p)==='c').length;
+  $('exp-stats').innerHTML=
+    '<div class="sbox"><div class="sbox-val">'+productos.length+'</div><div class="sbox-lbl">Total</div></div>'+
+    '<div class="sbox" style="border-color:#fecaca"><div class="sbox-val" style="color:var(--danger)">'+urg+'</div><div class="sbox-lbl">Urgentes</div></div>'+
+    '<div class="sbox" style="border-color:#fed7aa"><div class="sbox-val" style="color:var(--warn)">'+p25+'</div><div class="sbox-lbl">25 días</div></div>'+
+    '<div class="sbox"><div class="sbox-val" style="color:var(--muted2)">'+cad+'</div><div class="sbox-lbl">Caducados</div></div>';
+}
 
 function getExpData(){
   return productos.filter(p=>{
@@ -1306,6 +1333,51 @@ async function savePass(){
   }catch(e){console.error(e);toast('⚠ Error al cambiar la contraseña');}
 }
 
+let editRedId = null;
+
+function openEditRed(id){
+  const r=reducciones.find(x=>x.id==id); if(!r) return;
+  editRedId=id;
+  document.getElementById('red-edit-info').innerHTML='<b>'+r.producto_nombre+'</b><br>Fecha caducidad: <b>'+(r.fecha_caducidad||'—')+'</b>';
+  document.getElementById('re-orig').value=r.precio_original||'';
+  document.getElementById('re-precio').value=r.precio_reducido||'';
+  document.getElementById('re-unidades').value=r.unidades||1;
+  document.getElementById('re-fecha').value=r.fecha_reduccion||hoy();
+  document.getElementById('modal-red-edit').classList.add('on');
+}
+
+function closeRedEdit(){ document.getElementById('modal-red-edit').classList.remove('on'); }
+
+async function saveRedEdit(){
+  const r=reducciones.find(x=>x.id==editRedId); if(!r) return;
+  const precio_original=parseFloat(document.getElementById('re-orig').value)||(r.precio_original||0);
+  const precio_reducido=parseFloat(document.getElementById('re-precio').value);
+  const unidades=parseInt(document.getElementById('re-unidades').value)||1;
+  const fecha_reduccion=document.getElementById('re-fecha').value;
+  if(!precio_reducido||precio_reducido<=0){toast('⚠ Introduce el precio reducido');return;}
+  if(precio_reducido>=precio_original){toast('⚠ El precio reducido debe ser menor');return;}
+  try{
+    const {error}=await sb.from('reducciones').update({precio_original,precio_reducido,unidades,fecha_reduccion,updated_at:new Date().toISOString()}).eq('id',editRedId);
+    if(error) throw error;
+    const i=reducciones.findIndex(x=>x.id==editRedId);
+    if(i>=0) reducciones[i]={...reducciones[i],precio_original,precio_reducido,unidades,fecha_reduccion};
+    toast('✅ Reducción actualizada');
+    closeRedEdit(); buildRed();
+  }catch(e){console.error(e);toast('⚠ Error al guardar');}
+}
+
+async function deleteRed(){
+  if(!editRedId) return;
+  if(!confirm('¿Eliminar esta reducción?')) return;
+  try{
+    const {error}=await sb.from('reducciones').delete().eq('id',editRedId);
+    if(error) throw error;
+    reducciones=reducciones.filter(x=>x.id!=editRedId);
+    toast('🗑 Reducción eliminada');
+    closeRedEdit(); buildRed();
+  }catch(e){toast('⚠ Error al eliminar');}
+}
+
 async function resetData(){
   if(!confirm('¿Borrar todos los productos y volver al catálogo original?')) return;
   toast('⏳ Reseteando...',10000);
@@ -1325,6 +1397,7 @@ document.addEventListener('click',function(e){
   else if(a==='go25') go25();
   else if(a==='setCat') setCat(cat||'all');
   else if(a==='openNew') openNew();
+  else if(a==='openEditRed') openEditRed(id);
 });
 
 // ═══════════════════════════════════════════
@@ -1346,7 +1419,7 @@ document.addEventListener('DOMContentLoaded',function(){
   $('nb-scan').addEventListener('click', ()=>goPage('scan'));
   $('nb-red').addEventListener('click', ()=>goPage('red'));
   $('nb-exp').addEventListener('click', ()=>goPage('exp'));
-  const nbcfg=document.getElementById('nb-cfg'); if(nbcfg) nbcfg.addEventListener('click', ()=>goPage('cfg'));
+  $('nb-cfg').addEventListener('click', ()=>goPage('cfg'));
 
   // Back buttons
   $('back-lista').addEventListener('click', ()=>goPage('home'));
@@ -1405,6 +1478,10 @@ document.addEventListener('DOMContentLoaded',function(){
   $('f-imp').addEventListener('change',function(){ importFile(this); });
   $('btn-reset').addEventListener('click', resetData);
   $('btn-change-pass').addEventListener('click', openChangePass);
+  document.getElementById('mb-cancel-red-edit').addEventListener('click', closeRedEdit);
+  document.getElementById('mb-save-red-edit').addEventListener('click', saveRedEdit);
+  document.getElementById('mb-del-red').addEventListener('click', deleteRed);
+  document.getElementById('modal-red-edit').addEventListener('click', e=>{if(e.target===document.getElementById('modal-red-edit')) closeRedEdit();});
   $('mb-cancel-pass').addEventListener('click', closePass);
   $('mb-save-pass').addEventListener('click', savePass);
   document.getElementById('modal-pass').addEventListener('click', e=>{if(e.target===document.getElementById('modal-pass')) closePass();});
