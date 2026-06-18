@@ -388,7 +388,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
       <div class="pg-hdr"><span class="pg-title">Exportar</span></div>
       <div class="scroll">
         <div class="exp-body">
-          <div class="stats-grid" id="exp-stats"></div>
+          
           <div class="sec-lbl">Filtrar</div>
           <div class="fpills">
             <button class="fp on" id="ef-todos">Todos</button>
@@ -1139,16 +1139,7 @@ function reducirDesdeScanner(pid){ editId=pid; $('scan-res').innerHTML=''; openR
 // ═══════════════════════════════════════════
 // EXPORTAR
 // ═══════════════════════════════════════════
-function buildExp(){
-  const urg=productos.filter(p=>est(p)==='u').length;
-  const p25=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=25;}).length;
-  const cad=productos.filter(p=>est(p)==='c').length;
-  $('exp-stats').innerHTML=
-    '<div class="sbox"><div class="sbox-val">'+productos.length+'</div><div class="sbox-lbl">Total</div></div>'+
-    '<div class="sbox" style="border-color:#fecaca"><div class="sbox-val" style="color:var(--danger)">'+urg+'</div><div class="sbox-lbl">Urgentes</div></div>'+
-    '<div class="sbox" style="border-color:#fed7aa"><div class="sbox-val" style="color:var(--warn)">'+p25+'</div><div class="sbox-lbl">25 días</div></div>'+
-    '<div class="sbox"><div class="sbox-val" style="color:var(--muted2)">'+cad+'</div><div class="sbox-lbl">Caducados</div></div>';
-}
+function buildExp(){}
 
 function getExpData(){
   return productos.filter(p=>{
