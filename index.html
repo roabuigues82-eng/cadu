@@ -298,8 +298,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <input class="l-inp" id="lp" type="password" placeholder="••••••••" autocomplete="current-password">
     <button class="l-btn" id="lbtn">Entrar</button>
     <div class="l-err" id="lerr"></div>
-    <div style="text-align:center;margin-top:14px">
-      <button id="btn-forgot" style="background:none;border:none;color:#0369a1;font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit">¿Olvidaste la contraseña?</button>
+    <div style="text-align:center;margin-top:14px;display:flex;flex-direction:column;gap:8px">
+      <button id="btn-register" style="background:none;border:1px solid #0369a1;border-radius:10px;color:#0369a1;font-size:14px;cursor:pointer;padding:10px;font-family:inherit;font-weight:600">Crear cuenta nueva</button>
+      <button id="btn-forgot" style="background:none;border:none;color:#94a3b8;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit">¿Olvidaste la contraseña?</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal registro -->
+<div class="mbg" id="modal-register" style="display:none">
+  <div class="modal">
+    <div class="mdrag"></div>
+    <h3>Crear cuenta</h3>
+    <div class="mf"><label>Nombre de tienda / usuario</label><input id="reg-user" type="text" class="l-inp" placeholder="ej: valencia" autocapitalize="none" autocorrect="off"></div>
+    <div class="mf"><label>Contraseña</label><input id="reg-pass" type="password" class="l-inp" placeholder="Mínimo 4 caracteres"></div>
+    <div class="mf"><label>Confirmar contraseña</label><input id="reg-pass2" type="password" class="l-inp" placeholder="Repite la contraseña"></div>
+    <div class="l-err" id="reg-err" style="margin-bottom:8px"></div>
+    <div class="mbtns">
+      <button class="mb-c" id="mb-cancel-register">Cancelar</button>
+      <button class="mb-s" id="mb-save-register">Crear cuenta</button>
     </div>
   </div>
 </div>
@@ -1004,6 +1021,28 @@ function doLogin(){
     console.error(e);
     err.textContent='Error al iniciar sesión.';
   }
+}
+
+function doRegister(){
+  const user=(document.getElementById('reg-user').value||'').trim().toLowerCase();
+  const pass=(document.getElementById('reg-pass').value||'').trim();
+  const pass2=(document.getElementById('reg-pass2').value||'').trim();
+  const err=document.getElementById('reg-err');
+  err.textContent='';
+  if(!user||user.length<2){err.textContent='El usuario debe tener al menos 2 caracteres';return;}
+  if(!pass||pass.length<4){err.textContent='La contraseña debe tener al menos 4 caracteres';return;}
+  if(pass!==pass2){err.textContent='Las contraseñas no coinciden';return;}
+  const DB=sb._getDB();
+  const existe=DB.tiendas.find(t=>t.usuario===user)||DB.admins.find(a=>a.usuario===user);
+  if(existe){err.textContent='Ese usuario ya existe';return;}
+  const newTienda={id:'tienda-'+Date.now(),nombre:user.charAt(0).toUpperCase()+user.slice(1),usuario:user,password:pass};
+  DB.tiendas.push(newTienda);
+  try{localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(DB));}catch(e){}
+  // Login automático
+  tienda={id:newTienda.id,nombre:newTienda.nombre,usuario:newTienda.usuario};
+  try{localStorage.setItem(SK,JSON.stringify(tienda));}catch(e){}
+  document.getElementById('modal-register').style.display='none';
+  enterApp();
 }
 
 function doLogout(){
@@ -2305,6 +2344,17 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Login
   $('lbtn').addEventListener('click', doLogin);
+  document.getElementById('btn-register').addEventListener('click', ()=>{
+    document.getElementById('reg-user').value='';
+    document.getElementById('reg-pass').value='';
+    document.getElementById('reg-pass2').value='';
+    document.getElementById('reg-err').textContent='';
+    document.getElementById('modal-register').style.display='flex';
+  });
+  document.getElementById('mb-cancel-register').addEventListener('click', ()=>{
+    document.getElementById('modal-register').style.display='none';
+  });
+  document.getElementById('mb-save-register').addEventListener('click', doRegister);
   document.getElementById('btn-forgot').addEventListener('click', ()=>{
     document.getElementById('modal-forgot').style.display='flex';
   });
