@@ -1050,8 +1050,8 @@ function doRegister(){
 }
 
 function buildAdminCuentas(){
-  if(!tienda||!tienda.isAdmin) return;
   const sec=document.getElementById('admin-cuentas-sec');
+  if(!tienda||!tienda.isAdmin){ if(sec) sec.style.display='none'; return; }
   if(sec) sec.style.display='block';
   const list=document.getElementById('admin-cuentas-list');
   if(!list) return;
