@@ -869,6 +869,7 @@ const LocalDB = (function(){
       if(!DB[table]) DB[table] = [];
       return makeQuery(table);
     },
+    _getDB(){ return DB; },
     // Utilidad para depuración / reset completo
     _reset(){ DB = loadDB(); },
     _wipeAll(){
@@ -974,30 +975,34 @@ function checkSession(){
   return false;
 }
 
-async function doLogin(){
+function doLogin(){
   const user=(document.getElementById('lu').value||'').trim().toLowerCase();
   const pass=(document.getElementById('lp').value||'').trim();
   const btn=$('lbtn'), err=$('lerr');
   if(!user||!pass){err.textContent='Introduce usuario y contraseña';return;}
-  btn.disabled=true; btn.textContent='Comprobando...'; err.textContent='';
+  err.textContent='';
   try{
-    if(!sb&&!initSB()){err.textContent='Error de conexión';btn.disabled=false;btn.textContent='Entrar';return;}
-    const {data:rows,error}=await sb.from('tiendas').select('id,nombre,usuario').eq('usuario',user).eq('password',pass);
-    if(error) throw error;
-    if(rows&&rows.length>0){
-      tienda=rows[0];
-    } else {
-      const {data:adm,error:ae}=await sb.from('admins').select('id,usuario').eq('usuario',user).eq('password',pass);
-      if(ae) throw ae;
-      if(adm&&adm.length>0){ tienda={id:'admin',nombre:'Administrador',usuario:'admin',isAdmin:true}; }
-      else{ err.textContent='Usuario o contraseña incorrectos'; btn.disabled=false; btn.textContent='Entrar'; return; }
+    if(!sb) initSB();
+    const DB=sb._getDB ? sb._getDB() : null;
+    // Buscar en tiendas
+    let encontrado=false;
+    if(DB){
+      const t=DB.tiendas.find(r=>r.usuario===user&&r.password===pass);
+      if(t){ tienda={id:t.id,nombre:t.nombre,usuario:t.usuario}; encontrado=true; }
+      if(!encontrado){
+        const a=DB.admins.find(r=>r.usuario===user&&r.password===pass);
+        if(a){ tienda={id:'admin',nombre:'Administrador',usuario:'admin',isAdmin:true}; encontrado=true; }
+      }
     }
-    try{localStorage.setItem(SK,JSON.stringify(tienda));}catch(e){}
-    enterApp();
+    if(encontrado){
+      try{localStorage.setItem(SK,JSON.stringify(tienda));}catch(e){}
+      enterApp();
+    } else {
+      err.textContent='Usuario o contraseña incorrectos';
+    }
   }catch(e){
     console.error(e);
-    err.textContent='Error de conexión. Comprueba internet.';
-    btn.disabled=false; btn.textContent='Entrar';
+    err.textContent='Error al iniciar sesión.';
   }
 }
 
