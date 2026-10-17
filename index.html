@@ -1215,11 +1215,7 @@ function printResumen(){
   const contenido = $('resumen-content').innerHTML;
   const win = window.open('','_blank');
   if(!win){toast('Activa ventanas emergentes');return;}
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Caducan hoy</title><style>body{font-family:Arial,sans-serif;margin:20px;color:#0c4a6e}@media print{body{margin:10px}}</style></head><body>'+contenido+'
-<!-- Tapar banner Netlify -->
-<div style="position:fixed;bottom:0;right:0;width:180px;height:36px;background:#f8fafc;z-index:99999;pointer-events:none;border-radius:8px 0 0 0"></div>
-
-</body></html>');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Caducan hoy</title><style>body{font-family:Arial,sans-serif;margin:20px;color:#0c4a6e}@media print{body{margin:10px}}</style></head><body>'+contenido+'</body></html>');
   win.document.close();
   setTimeout(()=>win.print(),500);
 }
