@@ -2544,9 +2544,7 @@ self.addEventListener('notificationclick',e=>{
   async function registerSW(){
     if(!('serviceWorker' in navigator)) return null;
     try{
-      const blob=new Blob([SW_CODE],{type:'application/javascript'});
-      const swUrl=URL.createObjectURL(blob);
-      swReg=await navigator.serviceWorker.register(swUrl,{scope:'/'});
+      swReg=await navigator.serviceWorker.register('/cadu/sw.js',{scope:'/cadu/'});
       await navigator.serviceWorker.ready;
       return swReg;
     }catch(e){ console.warn('SW error',e); return null; }
