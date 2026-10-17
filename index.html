@@ -2674,7 +2674,8 @@ self.addEventListener('notificationclick',e=>{
       await syncProductosToSupabase(sub.endpoint);
       toast(ok ? '✅ Aviso programado a las '+horaFmt+' — llegará aunque no abras la app' : '⚠️ Error al guardar en servidor');
     } else {
-      toast('⚠️ No se pudo activar push en este dispositivo');
+      // Sin push (iOS sin SW), el aviso local sigue funcionando mientras la app esté abierta
+      toast('✅ Aviso guardado a las '+horaFmt+' (aviso local mientras la app esté abierta)');
     }
     scheduleNotifLoop();
   });
@@ -2683,6 +2684,10 @@ self.addEventListener('notificationclick',e=>{
   scheduleNotifLoop();
   // Registrar SW en background al cargar
   if('serviceWorker' in navigator && Notification.permission==='granted') registerSW();
+
+  // Cerrar modales al inicio por si quedaron abiertos
+  document.getElementById('modal-register').style.display='none';
+  document.getElementById('modal-forgot').style.display='none';
 
   // Sesion
   if(checkSession()) enterApp();
