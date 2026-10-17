@@ -1061,6 +1061,7 @@ function doLogout(){
 // ═══════════════════════════════════════════
 async function enterApp(){
   $('login').style.display='none';
+  document.getElementById('modal-register').style.display='none';
   $('app').classList.add('show');
   const hn=document.getElementById('hstore-name'); if(hn) hn.textContent=tienda.nombre; $('hstore').textContent='⚙️ Ajustes';
   const cs=document.getElementById('cfg-store'); if(cs) cs.textContent=tienda.nombre;
