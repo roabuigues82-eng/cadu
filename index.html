@@ -299,8 +299,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <button class="l-btn" id="lbtn">Entrar</button>
     <div class="l-err" id="lerr"></div>
     <div style="text-align:center;margin-top:14px;display:flex;flex-direction:column;gap:8px">
-      <button id="btn-register" style="background:none;border:1px solid #0369a1;border-radius:10px;color:#0369a1;font-size:14px;cursor:pointer;padding:10px;font-family:inherit;font-weight:600">Crear cuenta nueva</button>
-      <button id="btn-forgot" style="background:none;border:none;color:#94a3b8;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit">¿Olvidaste la contraseña?</button>
+      <button id="btn-register" onclick="document.getElementById('reg-user').value='';document.getElementById('reg-pass').value='';document.getElementById('reg-pass2').value='';document.getElementById('reg-err').textContent='';document.getElementById('modal-register').style.display='flex';" style="background:none;border:1px solid #0369a1;border-radius:10px;color:#0369a1;font-size:14px;cursor:pointer;padding:10px;font-family:inherit;font-weight:600">Crear cuenta nueva</button>
+      <button id="btn-forgot" onclick="document.getElementById('modal-forgot').style.display='flex'" style="background:none;border:none;color:#94a3b8;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit">¿Olvidaste la contraseña?</button>
     </div>
   </div>
 </div>
@@ -315,8 +315,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="mf"><label>Confirmar contraseña</label><input id="reg-pass2" type="password" class="l-inp" placeholder="Repite la contraseña"></div>
     <div class="l-err" id="reg-err" style="margin-bottom:8px"></div>
     <div class="mbtns">
-      <button class="mb-c" id="mb-cancel-register">Cancelar</button>
-      <button class="mb-s" id="mb-save-register">Crear cuenta</button>
+      <button class="mb-c" id="mb-cancel-register" onclick="document.getElementById('modal-register').style.display='none'">Cancelar</button>
+      <button class="mb-s" id="mb-save-register" onclick="doRegister()">Crear cuenta</button>
     </div>
   </div>
 </div>
@@ -2690,6 +2690,8 @@ self.addEventListener('notificationclick',e=>{
   if(checkSession()) enterApp();
 
   // Exponer funciones globalmente
+  window.doRegister = doRegister;
+  window.doLogin = doLogin;
   window.goLista = goLista;
   window.goResumen = goResumen;
   window.go25new = go25new;
