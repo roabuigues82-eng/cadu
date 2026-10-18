@@ -2416,10 +2416,11 @@ async function savePerdida(){
   db.productos=(db.productos||[]).filter(x=>String(x.id)!==String(p.id));
   localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
   sb._reset();
-  toast('🗑️ Pérdida registrada: '+(precio*unidades).toFixed(2)+'€');
+  productos=productos.filter(x=>String(x.id)!==String(p.id));
   closePerdida();
-  await loadProductos();
   buildHome();
+  toast('🗑️ Pérdida registrada: '+(precio*unidades).toFixed(2)+'€');
+  loadProductos();
 }
 
 function openVenta(){
@@ -2469,10 +2470,11 @@ async function saveVenta(){
     db.productos=(db.productos||[]).filter(x=>String(x.id)!==String(p.id));
     localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
     sb._reset();
-    toast('✅ '+unidades+'ud vendidas a '+precio.toFixed(2)+'€/ud — '+(precio*unidades).toFixed(2)+'€ total');
+    productos=productos.filter(x=>String(x.id)!==String(p.id));
     closeVenta();
-    await loadProductos();
     buildHome();
+    toast('✅ '+unidades+'ud vendidas a '+precio.toFixed(2)+'€/ud — '+(precio*unidades).toFixed(2)+'€ total');
+    loadProductos();
   }catch(e){console.error(e);toast('⚠ Error');}
 }
 
