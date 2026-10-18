@@ -2540,7 +2540,6 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('mb-cancel-venta').addEventListener('click', closeVenta);
   document.getElementById('mb-save-venta').addEventListener('click', saveVenta);
   document.getElementById('modal-venta').addEventListener('click', e=>{if(e.target===document.getElementById('modal-venta')) closeVenta();});
-  document.getElementById('back-analisis').addEventListener('click', ()=>goPage('home'));
   document.getElementById('btn-exp-analisis').addEventListener('click', exportAnalisisXLSX);
   const nb_analisis=document.getElementById('nb-analisis'); if(nb_analisis) nb_analisis.addEventListener('click', goAnalisis);
   document.getElementById('btn-print-25').addEventListener('click', print25);
