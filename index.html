@@ -497,7 +497,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
       <div class="scroll">
         <div class="exp-body">
           <div class="stats-grid" id="exp-stats"></div>
-          <div class="sec-lbl">Filtrar</div>
+          <div class="sec-lbl">Filtrar por estado</div>
+          <div class="fpills" id="fpills-est">
+            <button class="fp on" id="ef-todos">Todos</button>
+            <button class="fp" id="ef-urg">Urgentes</button>
+            <button class="fp" id="ef-25">25 días</button>
+            <button class="fp" id="ef-p">Próximos</button>
+            <button class="fp" id="ef-cad">Caducados</button>
+          </div>
+          <div class="sec-lbl">Filtrar por categoría</div>
           <div class="fpills" id="fpills-cats">
             <button class="fp on" id="ef-todas">Todas</button>
             <button class="fp" id="ef-cat-0">Chuches y gominolas</button>
@@ -939,7 +947,7 @@ let editId = null;
 let redProdId = null;
 let curCat = 'all';
 let curSF = 'all';
-let expF = 'todas';
+let expF = 'todas'; let expEst = 'todos';
 let camOn = false;
 let lastCode = null;
 
@@ -1937,8 +1945,14 @@ function buildExp(){
 
 function getExpData(){
   return productos.filter(p=>{
-    if(expF==='todas') return true;
-    return p.categoria===expF;
+    // filtro estado
+    if(expEst==='urg' && est(p)!=='u') return false;
+    if(expEst==='25'){const d=dias(p.fecha);if(!(d!==null&&d>=0&&d<=25)) return false;}
+    if(expEst==='p' && !['u','p25','p'].includes(est(p))) return false;
+    if(expEst==='cad' && est(p)!=='c') return false;
+    // filtro categoria
+    if(expF!=='todas' && p.categoria!==expF) return false;
+    return true;
   }).sort((a,b)=>(a.fecha||'9999')<(b.fecha||'9999')?-1:1);
 }
 
@@ -2601,7 +2615,12 @@ document.addEventListener('DOMContentLoaded',function(){
   $('mb-save-red').addEventListener('click', saveReduccion);
   $('modal-red').addEventListener('click', e=>{if(e.target===$('modal-red')) closeRed();});
 
-  // Exportar filtros por categoria
+  // Exportar filtros estado
+  ['todos','urg','25','p','cad'].forEach(v=>{
+    const btn=$('ef-'+v);
+    if(btn) btn.addEventListener('click',function(){ expEst=v; document.querySelectorAll('#fpills-est .fp').forEach(b=>b.classList.remove('on')); this.classList.add('on'); buildExp(); });
+  });
+  // Exportar filtros categoria
   ['todas'].concat(CATS.map((_,i)=>'cat-'+i)).forEach(v=>{
     const btn=$('ef-'+v);
     if(btn) btn.addEventListener('click',function(){ expF=v==='todas'?'todas':CATS[parseInt(v.replace('cat-',''))]; document.querySelectorAll('#fpills-cats .fp').forEach(b=>b.classList.remove('on')); this.classList.add('on'); buildExp(); });
