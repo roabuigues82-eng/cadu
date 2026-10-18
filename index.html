@@ -2218,6 +2218,24 @@ function buildAnalisis(){
     '</div>';
   }).join('');
 
+  // Pérdidas por mes
+  const perdidasPorMes={};
+  perdidas.forEach(p=>{
+    const m=p.fecha?(p.fecha.slice(0,7)):'sin-fecha';
+    if(!perdidasPorMes[m]) perdidasPorMes[m]={caducado:0,rotura:0,otro:0};
+    const val=p.total||0;
+    if(p.motivo==='caducado') perdidasPorMes[m].caducado+=val;
+    else if(p.motivo==='rotura') perdidasPorMes[m].rotura+=val;
+    else perdidasPorMes[m].otro+=val;
+  });
+  // Pérdida por reducción también
+  reds.forEach(r=>{
+    const m=r.fecha_reduccion?r.fecha_reduccion.slice(0,7):'sin-fecha';
+    if(!perdidasPorMes[m]) perdidasPorMes[m]={caducado:0,rotura:0,otro:0};
+    perdidasPorMes[m].otro+=((r.precio_original||0)-(r.precio_reducido||0))*r.unidades;
+  });
+  const mesesPerd=Object.keys(perdidasPorMes).filter(m=>m!=='sin-fecha').sort();
+
   el.innerHTML=
     '<div class="stats-grid" style="padding:12px">'+
       '<div class="sbox info"><div class="sbox-val">'+totalVentasNormal.toFixed(2)+'€</div><div class="sbox-lbl">✅ Ingresado precio normal</div></div>'+
@@ -2225,8 +2243,37 @@ function buildAnalisis(){
       '<div class="sbox ok"><div class="sbox-val">'+totalGenerado.toFixed(2)+'€</div><div class="sbox-lbl">💰 Total ingresado</div></div>'+
       '<div class="sbox" style="border-color:#fecaca"><div class="sbox-val" style="color:#dc2626">'+totalDescuento.toFixed(2)+'€</div><div class="sbox-lbl">⚠️ Pérdida por reducción</div></div>'+
       '<div class="sbox" style="border-color:#fca5a5"><div class="sbox-val" style="color:#991b1b">'+totalPerdidas.toFixed(2)+'€</div><div class="sbox-lbl">🗑️ Pérdidas totales</div></div>'+
-      '<div class="sbox ok"><div class="sbox-val">'+(totalGenerado-totalPerdidas-totalDescuento>=0?'+':'')+( totalGenerado-totalPerdidas-totalDescuento).toFixed(2)+'€</div><div class="sbox-lbl">📊 Balance neto</div></div>'+
+      '<div class="sbox ok"><div class="sbox-val">'+(totalGenerado-totalPerdidas-totalDescuento>=0?'+':'')+(totalGenerado-totalPerdidas-totalDescuento).toFixed(2)+'€</div><div class="sbox-lbl">📊 Balance neto</div></div>'+
     '</div>'+
+    // Gráfico barras verticales pérdidas por mes
+    (mesesPerd.length>=1?
+      '<div class="chart-wrap">'+
+        '<div class="chart-title">📉 Pérdidas por mes</div>'+
+        '<div style="display:flex;align-items:flex-end;gap:6px;height:140px;padding:0 4px" id="chart-perd-bars">'+
+          (()=>{
+            const maxP=Math.max(...mesesPerd.map(m=>(perdidasPorMes[m].caducado+perdidasPorMes[m].rotura+perdidasPorMes[m].otro)),1);
+            return mesesPerd.map(m=>{
+              const d=perdidasPorMes[m];
+              const total=d.caducado+d.rotura+d.otro;
+              const h=Math.round((total/maxP)*110);
+              const label=m.slice(5)+'/'+m.slice(2,4);
+              return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">'+
+                '<div style="font-size:10px;font-weight:700;color:#991b1b">'+total.toFixed(0)+'€</div>'+
+                '<div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:110px">'+
+                  '<div style="width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#ef4444,#b91c1c);height:'+h+'px;min-height:'+(total>0?4:0)+'px"></div>'+
+                '</div>'+
+                '<div style="font-size:10px;color:var(--muted2);font-weight:600;text-align:center">'+label+'</div>'+
+              '</div>';
+            }).join('');
+          })()
+        +'</div>'+
+        '<div style="display:flex;gap:12px;margin-top:10px;font-size:11px;flex-wrap:wrap">'+
+          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block"></span>Caducado</span>'+
+          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f97316;border-radius:2px;display:inline-block"></span>Rotura</span>'+
+          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#b91c1c;border-radius:2px;display:inline-block"></span>Reducción</span>'+
+        '</div>'+
+      '</div>'
+    :'')+
     '<div style="padding:0 12px 8px;display:flex;gap:10px;font-size:12px">'+
       '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#0284c7;border-radius:3px;display:inline-block"></span>Precio normal</span>'+
       '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#f59e0b;border-radius:3px;display:inline-block"></span>Precio reducido</span>'+
