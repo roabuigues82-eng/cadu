@@ -1124,39 +1124,37 @@ async function enterApp(){
   scheduleNotifications();
 }
 
-async function btnPurgar(){
-  if(!confirm('¿Eliminar todos los productos que llevan más de 7 días caducados?')) return;
+function purgarCaducadosDB(tiendaId){
+  const DB=sb._getDB();
   const hoy=new Date(); hoy.setHours(0,0,0,0);
   const limite=new Date(hoy); limite.setDate(limite.getDate()-7);
   const limiteStr=limite.toISOString().split('T')[0];
-  toast('🔍 Buscando caducados...', 2000);
+  const antes=DB.productos.length;
+  DB.productos=DB.productos.filter(p=>{
+    if(tiendaId!=='admin' && p.tienda_id!==tiendaId) return true;
+    if(!p.fecha) return true;
+    return p.fecha>=limiteStr;
+  });
+  const eliminados=antes-DB.productos.length;
+  if(eliminados>0) localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(DB));
+  return eliminados;
+}
+
+async function btnPurgar(){
+  if(!confirm('¿Eliminar todos los productos que llevan más de 7 días caducados?')) return;
   try{
-    let q=sb.from('productos').select('id,nombre,fecha').filter('fecha','lt',limiteStr);
-    if(tienda.id!=='admin') q=q.eq('tienda_id',tienda.id);
-    const {data:viejos,error}=await q;
-    if(error){ toast('⚠ Error al buscar: '+error.message,4000); return; }
-    if(!viejos||!viejos.length){ toast('✅ No hay productos con más de 7 días caducados',3000); return; }
-    const ids=viejos.map(p=>p.id);
-    const {error:e2}=await sb.from('productos').delete().filter('id','in',`(${ids.join(',')})`);
-    if(e2){ toast('⚠ Error al eliminar: '+e2.message,4000); return; }
-    toast(`🗑 ${ids.length} producto(s) eliminados`,3000);
+    const n=purgarCaducadosDB(tienda.id);
+    if(n===0){ toast('No hay productos con más de 7 días caducados',3000); return; }
+    toast('🗑 '+n+' producto(s) eliminados',3000);
     await loadProductos();
-  }catch(e){ toast('⚠ Error: '+e.message,4000); console.error(e); }
+  }catch(e){ toast('Error: '+e.message,4000); console.error(e); }
 }
 window.btnPurgar=btnPurgar;
 
 async function purgarCaducados(){
   try{
-    const hoy=new Date(); hoy.setHours(0,0,0,0);
-    const limite=new Date(hoy); limite.setDate(limite.getDate()-7);
-    const limiteStr=limite.toISOString().split('T')[0];
-    let q=sb.from('productos').select('id,nombre,fecha').filter('fecha','lt',limiteStr);
-    if(tienda.id!=='admin') q=q.eq('tienda_id',tienda.id);
-    const {data:viejos,error}=await q;
-    if(error||!viejos||!viejos.length) return;
-    const ids=viejos.map(p=>p.id);
-    const {error:e2}=await sb.from('productos').delete().filter('id','in',`(${ids.join(',')})`);
-    if(!e2) console.log(`🗑 ${ids.length} producto(s) caducados eliminados (>7 días)`);
+    const n=purgarCaducadosDB(tienda.id);
+    if(n>0){ console.log('Purgados '+n+' productos caducados >7 dias'); await loadProductos(); }
   }catch(e){ console.error('purgarCaducados:',e); }
 }
 
