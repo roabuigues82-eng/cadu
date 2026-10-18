@@ -388,16 +388,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <!-- ANALISIS -->
     <div class="page" id="pg-analisis">
       <div class="pg-hdr">
-        <button class="back-btn" id="back-analisis">‹ Inicio</button>
-        <span class="pg-title" style="margin-left:6px">Análisis</span>
-        <button id="btn-exp-analisis" style="margin-left:auto;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">📊 Excel</button>
+        <span class="pg-title">Análisis</span>
+
         <button id="btn-reset-analisis2" onclick="resetAnalisis()" style="margin-left:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit" title="Borrar datos de prueba">🧹</button>
       </div>
       <div class="scroll" style="background:var(--bg)">
         <div style="padding:12px 12px 0">
-          <div class="ecard" id="btn-reset-analisis" style="border-color:#fca5a5">
-            <div class="ecard-ico">🧹</div>
-            <div><div class="ecard-t" style="color:#dc2626">Borrar datos de análisis</div><div class="ecard-d">Borra ventas, pérdidas y reducciones</div></div>
+          <div class="ecard" id="btn-exp-analisis" style="margin-bottom:4px">
+            <div class="ecard-ico">📊</div>
+            <div><div class="ecard-t">Descargar Excel</div><div class="ecard-d">Exportar datos de análisis</div></div>
           </div>
         </div>
         <div id="analisis-content" style="padding:0 0 16px"></div>
