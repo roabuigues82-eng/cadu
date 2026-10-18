@@ -389,8 +389,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="page" id="pg-analisis">
       <div class="pg-hdr">
         <span class="pg-title">Análisis</span>
-
-        <button id="btn-reset-analisis2" onclick="resetAnalisis()" style="margin-left:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit" title="Borrar datos de prueba">🧹</button>
+        <button id="btn-reset-analisis2" onclick="resetAnalisis()" style="margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit" title="Borrar datos de análisis">🧹</button>
       </div>
       <div class="scroll" style="background:var(--bg)">
         <div style="padding:12px 12px 0">
@@ -496,6 +495,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="page" id="pg-red">
       <div class="pg-hdr">
         <span class="pg-title">Reducciones</span>
+        <button id="btn-reset-red" onclick="resetReducciones()" style="margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit" title="Borrar todas las reducciones">🧹</button>
       </div>
       <div class="scroll">
         <div style="padding:12px">
@@ -2463,6 +2463,14 @@ async function resetData(){
   const {error}=await sb.from('productos').delete().eq('tienda_id',tienda.id);
   if(error){toast('⚠ Error');return;}
   await importBase();
+}
+
+function resetReducciones(){
+  if(!confirm('¿Borrar todas las reducciones?')) return;
+  reducciones=[];
+  saveReds();
+  buildRed();
+  toast('Reducciones borradas');
 }
 
 function resetAnalisis(){
