@@ -498,11 +498,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
         <div class="exp-body">
           <div class="stats-grid" id="exp-stats"></div>
           <div class="sec-lbl">Filtrar</div>
-          <div class="fpills">
-            <button class="fp on" id="ef-todos">Todos</button>
-            <button class="fp" id="ef-urg">Urgentes</button>
-            <button class="fp" id="ef-25">25 días</button>
-            <button class="fp" id="ef-p">Próximos</button>
+          <div class="fpills" id="fpills-cats">
+            <button class="fp on" id="ef-todas">Todas</button>
+            <button class="fp" id="ef-cat-0">Chuches y gominolas</button>
+            <button class="fp" id="ef-cat-1">Mascotas</button>
+            <button class="fp" id="ef-cat-2">Bebidas</button>
+            <button class="fp" id="ef-cat-3">Pilas</button>
+            <button class="fp" id="ef-cat-4">Chocolates y galletas</button>
+            <button class="fp" id="ef-cat-5">Chicles y caramelos duros</button>
+            <button class="fp" id="ef-cat-6">Snacks salados</button>
           </div>
           <div class="sec-lbl">Descargar productos</div>
           <div class="ecard" id="btn-xlsx">
@@ -935,7 +939,7 @@ let editId = null;
 let redProdId = null;
 let curCat = 'all';
 let curSF = 'all';
-let expF = 'todos';
+let expF = 'todas';
 let camOn = false;
 let lastCode = null;
 
@@ -1920,24 +1924,21 @@ function reducirDesdeScanner(pid){ editId=pid; $('scan-res').innerHTML=''; openR
 // EXPORTAR
 // ═══════════════════════════════════════════
 function buildExp(){
-  const urg=productos.filter(p=>est(p)==='u').length;
-  const p25=productos.filter(p=>dias(p.fecha)===25).length;
-  const p15=productos.filter(p=>dias(p.fecha)===15).length;
-  const cad=productos.filter(p=>est(p)==='c').length;
+  const data=getExpData();
+  const urg=data.filter(p=>est(p)==='u').length;
+  const cad=data.filter(p=>est(p)==='c').length;
+  const catLabel=expF==='todas'?'Todas':expF;
   $('exp-stats').innerHTML=
-    '<div class="sbox"><div class="sbox-val">'+productos.length+'</div><div class="sbox-lbl">Total</div></div>'+
+    '<div class="sbox"><div class="sbox-val">'+data.length+'</div><div class="sbox-lbl">'+(expF==='todas'?'Total':'Esta cat.')+'</div></div>'+
     '<div class="sbox" style="border-color:#fecaca"><div class="sbox-val" style="color:var(--danger)">'+urg+'</div><div class="sbox-lbl">Urgentes</div></div>'+
-    '<div class="sbox" style="border-color:#fed7aa"><div class="sbox-val" style="color:var(--warn)">'+p25+'</div><div class="sbox-lbl">25 días</div></div>'+
-    '<div class="sbox"><div class="sbox-val" style="color:var(--muted2)">'+cad+'</div><div class="sbox-lbl">Caducados</div></div>';
+    '<div class="sbox"><div class="sbox-val" style="color:var(--muted2)">'+cad+'</div><div class="sbox-lbl">Caducados</div></div>'+
+    '<div class="sbox" style="border-color:#d1fae5"><div class="sbox-val" style="color:#059669">'+(data.length-urg-cad)+'</div><div class="sbox-lbl">OK</div></div>';
 }
 
 function getExpData(){
   return productos.filter(p=>{
-    if(expF==='todos') return true;
-    if(expF==='urg') return est(p)==='u';
-    if(expF==='25'){const d=dias(p.fecha);return d!==null&&d>=0&&d<=25;}
-    if(expF==='p') return ['u','p25','p'].includes(est(p));
-    return true;
+    if(expF==='todas') return true;
+    return p.categoria===expF;
   }).sort((a,b)=>(a.fecha||'9999')<(b.fecha||'9999')?-1:1);
 }
 
@@ -1960,7 +1961,7 @@ function buildXL(){
 
 function exportPDF(){
   const f=getExpData(); if(!f.length){toast('Sin datos');return;}
-  const titulo={todos:'Todos',urg:'Urgentes',25:'Próximos 25d',p:'Próximos'}[expF]||'Productos';
+  const titulo=expF==='todas'?'Todos productos':(expF||'Productos');
   // Agrupar por categoría
   const porCat={};
   f.forEach(p=>{if(!porCat[p.categoria])porCat[p.categoria]=[];porCat[p.categoria].push(p);});
@@ -2232,7 +2233,18 @@ function buildAnalisis(){
     if(!perdidasPorMes[m]) perdidasPorMes[m]={caducado:0,rotura:0,otro:0};
     perdidasPorMes[m].otro+=((r.precio_original||0)-(r.precio_reducido||0))*r.unidades;
   });
-  const mesesPerd=Object.keys(perdidasPorMes).filter(m=>m!=='sin-fecha').sort();
+  // Generar los últimos 6 meses siempre (con o sin datos)
+  const mesesPerd=(()=>{
+    const hoy=new Date();
+    const lista=[];
+    for(let i=5;i>=0;i--){
+      const d=new Date(hoy.getFullYear(),hoy.getMonth()-i,1);
+      const key=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+      if(!perdidasPorMes[key]) perdidasPorMes[key]={caducado:0,rotura:0,otro:0};
+      lista.push(key);
+    }
+    return lista;
+  })();
 
   el.innerHTML=
     '<div class="stats-grid" style="padding:12px">'+
@@ -2243,40 +2255,54 @@ function buildAnalisis(){
       '<div class="sbox" style="border-color:#fca5a5"><div class="sbox-val" style="color:#991b1b">'+totalPerdidas.toFixed(2)+'€</div><div class="sbox-lbl">🗑️ Pérdidas totales</div></div>'+
       '<div class="sbox ok"><div class="sbox-val">'+(totalGenerado-totalPerdidas-totalDescuento>=0?'+':'')+(totalGenerado-totalPerdidas-totalDescuento).toFixed(2)+'€</div><div class="sbox-lbl">📊 Balance neto</div></div>'+
     '</div>'+
-    // Gráfico barras verticales pérdidas por mes
-    (mesesPerd.length>=1?
-      '<div class="chart-wrap">'+
-        '<div class="chart-title">📉 Pérdidas por mes</div>'+
-        '<div style="display:flex;align-items:flex-end;gap:6px;height:140px;padding:0 4px" id="chart-perd-bars">'+
-          (()=>{
-            const maxP=Math.max(...mesesPerd.map(m=>(perdidasPorMes[m].caducado+perdidasPorMes[m].rotura+perdidasPorMes[m].otro)),1);
-            return mesesPerd.map(m=>{
-              const d=perdidasPorMes[m];
-              const total=d.caducado+d.rotura+d.otro;
-              const h=Math.round((total/maxP)*110);
-              const label=m.slice(5)+'/'+m.slice(2,4);
-              return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">'+
-                '<div style="font-size:10px;font-weight:700;color:#991b1b">'+total.toFixed(0)+'€</div>'+
-                '<div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:110px">'+
-                  '<div style="width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#ef4444,#b91c1c);height:'+h+'px;min-height:'+(total>0?4:0)+'px"></div>'+
-                '</div>'+
-                '<div style="font-size:10px;color:var(--muted2);font-weight:600;text-align:center">'+label+'</div>'+
-              '</div>';
-            }).join('');
-          })()
-        +'</div>'+
-        '<div style="display:flex;gap:12px;margin-top:10px;font-size:11px;flex-wrap:wrap">'+
-          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block"></span>Caducado</span>'+
-          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f97316;border-radius:2px;display:inline-block"></span>Rotura</span>'+
-          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#b91c1c;border-radius:2px;display:inline-block"></span>Reducción</span>'+
+    // Gráfico combinado: ventas + recuperado + pérdidas por mes (últimos 6 meses)
+    (()=>{
+      const BAR_H=100;
+      // Combinar todos los meses relevantes
+      const allVals=mesesPerd.map(m=>{
+        const p=perdidasPorMes[m]||{caducado:0,rotura:0,otro:0};
+        const v=porMes[m]||{normal:0,reducido:0};
+        const perdTotal=(p.caducado+p.rotura+p.otro);
+        const recup=v.reducido;
+        const venta=v.normal;
+        return Math.max(perdTotal,recup,venta);
+      });
+      const maxVal=Math.max(...allVals,0.01);
+      return '<div class="chart-wrap">'+
+        '<div class="chart-title">📊 Resumen mensual — últimos 6 meses</div>'+
+        '<div style="display:flex;align-items:flex-end;gap:4px;height:'+(BAR_H+30)+'px;padding:0 0 24px;position:relative;border-bottom:2px solid var(--border)">'+
+          mesesPerd.map(m=>{
+            const p=perdidasPorMes[m]||{caducado:0,rotura:0,otro:0};
+            const v=porMes[m]||{normal:0,reducido:0};
+            const perdTotal=p.caducado+p.rotura+p.otro;
+            const recup=v.reducido;
+            const venta=v.normal;
+            const hV=Math.max(Math.round((venta/maxVal)*BAR_H),venta>0?4:0);
+            const hR=Math.max(Math.round((recup/maxVal)*BAR_H),recup>0?4:0);
+            const hP=Math.max(Math.round((perdTotal/maxVal)*BAR_H),perdTotal>0?4:0);
+            const label=m.slice(5)+'/'+m.slice(2,4);
+            const hasData=venta>0||recup>0||perdTotal>0;
+            return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'+
+              '<div style="font-size:8px;color:var(--muted2);margin-bottom:2px;text-align:center;line-height:1.1">'+
+                (venta>0?'<span style="color:#16a34a">'+venta.toFixed(0)+'</span><br>':'<br>')+
+              '</div>'+
+              '<div style="display:flex;align-items:flex-end;gap:2px;height:'+BAR_H+'px">'+
+                '<div title="Ventas '+venta.toFixed(2)+'€" style="width:10px;height:'+(hV||2)+'px;background:'+(venta>0?'#16a34a':'var(--border)')+';border-radius:3px 3px 0 0"></div>'+
+                '<div title="Recuperado '+recup.toFixed(2)+'€" style="width:10px;height:'+(hR||2)+'px;background:'+(recup>0?'#f59e0b':'var(--border)')+';border-radius:3px 3px 0 0"></div>'+
+                '<div title="Pérdidas '+perdTotal.toFixed(2)+'€" style="width:10px;height:'+(hP||2)+'px;background:'+(perdTotal>0?'#ef4444':'var(--border)')+';border-radius:3px 3px 0 0"></div>'+
+              '</div>'+
+              '<div style="font-size:9px;color:var(--muted2);font-weight:600;margin-top:4px;text-align:center">'+label+'</div>'+
+            '</div>';
+          }).join('')+
         '</div>'+
-      '</div>'
-    :'')+
-    '<div style="padding:0 12px 8px;display:flex;gap:10px;font-size:12px">'+
-      '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#0284c7;border-radius:3px;display:inline-block"></span>Precio normal</span>'+
-      '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#f59e0b;border-radius:3px;display:inline-block"></span>Precio reducido</span>'+
-    '</div>'+
-    (meses.length?'<div style="padding:0 12px">'+barras+'</div>':
+        '<div style="display:flex;gap:10px;margin-top:10px;font-size:11px;flex-wrap:wrap">'+
+          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#16a34a;border-radius:2px;display:inline-block"></span>Ventas</span>'+
+          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#f59e0b;border-radius:2px;display:inline-block"></span>Recuperado</span>'+
+          '<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#ef4444;border-radius:2px;display:inline-block"></span>Pérdidas</span>'+
+        '</div>'+
+      '</div>';
+    })()+
+    (meses.length?'':
       '<div class="empty"><div class="empty-i">📊</div><div>Sin datos aún</div><div style="font-size:12px;color:var(--muted2);margin-top:4px">Marca productos como vendidos para ver el análisis</div></div>')+
     '<div style="padding:12px;font-size:11px;color:var(--muted2)">'+
       ventasNormal.length+' ventas normales · '+ventasReducido.length+' ventas reducidas · '+reds.length+' reducciones'+
@@ -2386,9 +2412,13 @@ async function savePerdida(){
     fecha:fecha,
     created_at:new Date().toISOString()
   });
+  // Eliminar el producto de la lista
+  db.productos=(db.productos||[]).filter(x=>String(x.id)!==String(p.id));
   localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
+  sb._reset();
   toast('🗑️ Pérdida registrada: '+(precio*unidades).toFixed(2)+'€');
   closePerdida();
+  await loadProductos();
   buildHome();
 }
 
@@ -2435,11 +2465,13 @@ async function saveVenta(){
     const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
     if(!db.ventas) db.ventas=[];
     db.ventas.push(venta);
+    // Eliminar el producto de la lista
+    db.productos=(db.productos||[]).filter(x=>String(x.id)!==String(p.id));
     localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
+    sb._reset();
     toast('✅ '+unidades+'ud vendidas a '+precio.toFixed(2)+'€/ud — '+(precio*unidades).toFixed(2)+'€ total');
     closeVenta();
-    // Si quedan unidades, no borrar el producto - solo registrar la venta
-    // El usuario decide si borrar o actualizar manualmente
+    await loadProductos();
     buildHome();
   }catch(e){console.error(e);toast('⚠ Error');}
 }
@@ -2567,10 +2599,10 @@ document.addEventListener('DOMContentLoaded',function(){
   $('mb-save-red').addEventListener('click', saveReduccion);
   $('modal-red').addEventListener('click', e=>{if(e.target===$('modal-red')) closeRed();});
 
-  // Exportar filtros
-  ['todos','urg','25','p'].forEach(v=>{
+  // Exportar filtros por categoria
+  ['todas'].concat(CATS.map((_,i)=>'cat-'+i)).forEach(v=>{
     const btn=$('ef-'+v);
-    if(btn) btn.addEventListener('click',function(){ expF=v; document.querySelectorAll('.fp').forEach(b=>b.classList.remove('on')); this.classList.add('on'); });
+    if(btn) btn.addEventListener('click',function(){ expF=v==='todas'?'todas':CATS[parseInt(v.replace('cat-',''))]; document.querySelectorAll('#fpills-cats .fp').forEach(b=>b.classList.remove('on')); this.classList.add('on'); buildExp(); });
   });
   $('btn-xlsx').addEventListener('click', exportXLSX);
   $('btn-pdf').addEventListener('click', exportPDF);
