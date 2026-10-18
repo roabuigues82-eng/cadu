@@ -390,6 +390,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
         <button class="back-btn" id="back-analisis">‹ Inicio</button>
         <span class="pg-title" style="margin-left:6px">Análisis</span>
         <button id="btn-exp-analisis" style="margin-left:auto;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">📊 Excel</button>
+        <button id="btn-reset-analisis2" onclick="resetAnalisis()" style="margin-left:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit" title="Borrar datos de prueba">🧹</button>
       </div>
       <div class="scroll" id="analisis-content" style="background:var(--bg);padding:0 0 16px"></div>
     </div>
@@ -554,6 +555,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
           <div class="citem danger" id="btn-reset">
             <div class="citem-ico">↺</div>
             <div><div class="citem-t">Resetear productos</div><div class="citem-s">Volver al catálogo original</div></div>
+            <span class="citem-arr">›</span>
+          </div>
+          <div class="citem danger" id="btn-reset-analisis">
+            <div class="citem-ico">🧹</div>
+            <div><div class="citem-t">Borrar datos de análisis</div><div class="citem-s">Borra ventas, pérdidas y reducciones</div></div>
             <span class="citem-arr">›</span>
           </div>
           <div class="cfg-sec">Seguridad</div>
@@ -2500,6 +2506,18 @@ async function resetData(){
   await importBase();
 }
 
+function resetAnalisis(){
+  if(!confirm('¿Borrar todas las ventas, pérdidas y reducciones? Los productos no se tocan.')) return;
+  const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+  db.ventas=[];
+  db.perdidas=[];
+  localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
+  sb._reset();
+  toast('🧹 Ventas y pérdidas borradas',3000);
+  buildAnalisis();
+}
+window.resetAnalisis=resetAnalisis;
+
 // ═══════════════════════════════════════════
 // DELEGADOR GLOBAL
 // ═══════════════════════════════════════════
@@ -2632,6 +2650,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // Ajustes
   $('f-imp').addEventListener('change',function(){ importFile(this); });
   $('btn-reset').addEventListener('click', resetData);
+  $('btn-reset-analisis').addEventListener('click', resetAnalisis);
   $('btn-change-pass').addEventListener('click', openChangePass);
   document.getElementById('mb-cancel-red-edit').addEventListener('click', closeRedEdit);
   document.getElementById('mb-save-red-edit').addEventListener('click', saveRedEdit);
