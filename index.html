@@ -534,6 +534,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
             <span class="citem-arr">›</span>
             <input type="file" id="f-imp" accept=".csv,.xlsx,.xls" style="display:none">
           </label>
+          <div class="citem" id="btn-purgar" onclick="btnPurgar()">
+            <div class="citem-ico">🗑</div>
+            <div><div class="citem-t">Eliminar caducados</div><div class="citem-s">Borra los que llevan +7 días caducados</div></div>
+            <span class="citem-arr">›</span>
+          </div>
           <div class="citem danger" id="btn-reset">
             <div class="citem-ico">↺</div>
             <div><div class="citem-t">Resetear productos</div><div class="citem-s">Volver al catálogo original</div></div>
@@ -1113,13 +1118,20 @@ async function enterApp(){
   $('app').classList.add('show');
   const hn=document.getElementById('hstore-name'); if(hn) hn.textContent=tienda.nombre; $('hstore').textContent='⚙️ Ajustes';
   const cs=document.getElementById('cfg-store'); if(cs) cs.textContent=tienda.nombre;
-  await purgarCaducados();
+  await purgarCaducados(false);
   await Promise.all([loadProductos(), loadReducciones()]);
   goPage('home');
   scheduleNotifications();
 }
 
-async function purgarCaducados(){
+async function btnPurgar(){
+  if(!confirm('¿Eliminar todos los productos que llevan más de 7 días caducados?')) return;
+  await purgarCaducados(true);
+  await loadProductos();
+}
+window.btnPurgar=btnPurgar;
+
+async function purgarCaducados(mostrarToast=false){
   try{
     const hoy=new Date(); hoy.setHours(0,0,0,0);
     const limite=new Date(hoy); limite.setDate(limite.getDate()-7);
@@ -1130,7 +1142,10 @@ async function purgarCaducados(){
     if(error||!viejos||!viejos.length) return;
     const ids=viejos.map(p=>p.id);
     const {error:e2}=await sb.from('productos').delete().in('id',ids);
-    if(!e2) console.log(`🗑 ${ids.length} producto(s) caducados eliminados (>7 días)`);
+    if(!e2){
+      console.log(`🗑 ${ids.length} producto(s) caducados eliminados (>7 días)`);
+      if(mostrarToast) toast(`🗑 ${ids.length} producto(s) eliminados`,3000);
+    }
   }catch(e){ console.error('purgarCaducados:',e); }
 }
 
