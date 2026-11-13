@@ -694,6 +694,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
   </div>
 </div>
 
+<!-- MODAL PROGRAMAR NOTIFICACIÓN -->
+<div class="mbg" id="modal-notif-hora">
+  <div class="modal">
+    <div class="mdrag"></div>
+    <h3>⏰ Programar aviso diario</h3>
+    <div style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--muted2)">
+      Recibirás una notificación cada día a la hora que elijas, aunque la app esté cerrada.
+    </div>
+    <div class="mf"><label>Hora del aviso</label><input id="notif-hora-input" type="time" value="09:00" style="font-size:18px;padding:12px;text-align:center"></div>
+    <div class="mbtns">
+      <button class="mb-c" id="mb-cancel-notif-hora">Cancelar</button>
+      <button class="mb-s" id="mb-save-notif-hora">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR REDUCCION -->
 <div class="mbg" id="modal-red-edit">
   <div class="modal">
@@ -2656,6 +2672,7 @@ document.addEventListener('DOMContentLoaded',function(){
   $('mb-cancel-pass').addEventListener('click', closePass);
   $('mb-save-pass').addEventListener('click', savePass);
   document.getElementById('modal-pass').addEventListener('click', e=>{if(e.target===document.getElementById('modal-pass')) closePass();});
+  document.getElementById('modal-notif-hora').addEventListener('click', e=>{if(e.target===document.getElementById('modal-notif-hora')) document.getElementById('modal-notif-hora').classList.remove('on');});
   $('btn-logout').addEventListener('click', doLogout);
 
   // ── NOTIFICACIONES ──────────────────────────────────────────
@@ -2878,41 +2895,49 @@ self.addEventListener('notificationclick',e=>{
     if(perm==='granted'){
       toast('✅ Notificaciones activadas');
       await registerSW();
-      // Si ya tienen hora guardada, suscribir
-      const cfg=getNotifCfg();
-      if(cfg.hora){
-        const sub=await subscribePush();
-        if(sub){ await savePushToSupabase(sub,cfg.hora); await syncProductosToSupabase(sub.endpoint); }
-      }
       scheduleNotifLoop();
+      // Intentar suscribir a push (opcional, falla silenciosamente si Supabase está pausado)
+      try{
+        const cfg=getNotifCfg();
+        if(cfg.hora){
+          const sub=await subscribePush();
+          if(sub){ await savePushToSupabase(sub,cfg.hora); await syncProductosToSupabase(sub.endpoint); }
+        }
+      }catch(e){}
     } else {
       toast('Notificaciones no permitidas');
     }
   });
 
-  // Botón programar hora
+  // Botón programar hora — abre modal (prompt() bloqueado en PWA Android)
   const btnNC=$('btn-notif-cfg');
-  if(btnNC) btnNC.addEventListener('click',async()=>{
+  if(btnNC) btnNC.addEventListener('click',()=>{
     if(Notification.permission!=='granted'){ toast('Primero activa las notificaciones'); return; }
     const cfg=getNotifCfg();
-    const hora=prompt('¿A qué hora quieres el aviso diario? (formato HH:MM)', cfg.hora||'09:00');
-    if(!hora) return;
-    if(!/^\d{1,2}:\d{2}$/.test(hora)){ toast('Formato incorrecto. Usa HH:MM (ej. 09:00)'); return; }
-    const [hh,mm]=hora.split(':').map(Number);
-    if(hh<0||hh>23||mm<0||mm>59){ toast('Hora no válida'); return; }
-    const horaFmt=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+    const inp=document.getElementById('notif-hora-input');
+    if(inp) inp.value=cfg.hora||'09:00';
+    document.getElementById('modal-notif-hora').classList.add('on');
+  });
+  document.getElementById('mb-cancel-notif-hora').addEventListener('click',()=>{
+    document.getElementById('modal-notif-hora').classList.remove('on');
+  });
+  document.getElementById('mb-save-notif-hora').addEventListener('click',async()=>{
+    const inp=document.getElementById('notif-hora-input');
+    const horaFmt=inp?inp.value:'09:00';
+    if(!horaFmt||!/^\d{2}:\d{2}$/.test(horaFmt)){ toast('Hora no válida'); return; }
+    document.getElementById('modal-notif-hora').classList.remove('on');
+    const cfg=getNotifCfg();
     saveNotifCfg({...cfg, hora:horaFmt});
     toast('⏳ Guardando aviso en servidor...');
-    const sub=await subscribePush();
-    if(sub){
-      const ok=await savePushToSupabase(sub,horaFmt);
-      await syncProductosToSupabase(sub.endpoint);
-      toast(ok ? '✅ Aviso programado a las '+horaFmt+' — llegará aunque no abras la app' : '⚠️ Error al guardar en servidor');
-    } else {
-      // Sin push (iOS sin SW), el aviso local sigue funcionando mientras la app esté abierta
-      toast('✅ Aviso guardado a las '+horaFmt+' (aviso local mientras la app esté abierta)');
-    }
     scheduleNotifLoop();
+    try{
+      const sub=await subscribePush();
+      if(sub){
+        const ok=await savePushToSupabase(sub,horaFmt);
+        if(ok) await syncProductosToSupabase(sub.endpoint);
+      }
+    }catch(e){}
+    toast('✅ Aviso programado a las '+horaFmt);
   });
 
   updateNotifUI();
@@ -2923,6 +2948,7 @@ self.addEventListener('notificationclick',e=>{
   // Cerrar modales al inicio por si quedaron abiertos
   document.getElementById('modal-register').style.display='none';
   document.getElementById('modal-forgot').style.display='none';
+  document.getElementById('modal-notif-hora').classList.remove('on');
 
   // Sesion
   if(checkSession()) enterApp();
