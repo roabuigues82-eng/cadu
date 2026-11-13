@@ -1186,6 +1186,14 @@ async function enterApp(){
   await Promise.all([loadProductos(), loadReducciones()]);
   goPage('home');
   scheduleNotifications();
+  // Ping silencioso a Supabase para evitar que se pause (plan gratuito = pausa tras 7 días sin actividad)
+  setTimeout(()=>{
+    try{
+      const SBP='https://skrxsitgjqqupiecntjb.supabase.co';
+      const SBA='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrcnhzaXRnanFxdXBpZWNudGpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMjk0MjQsImV4cCI6MjEwNzgwNTQyNH0.ENu-Ck6Wg1uSA5ZfUGm2kR9RAx-e_5vgvYQdqqtv3h8';
+      fetch(SBP+'/rest/v1/push_subscriptions?select=id&limit=1',{headers:{'apikey':SBA,'Authorization':'Bearer '+SBA}}).catch(()=>{});
+    }catch(e){}
+  }, 3000);
 }
 
 function purgarCaducadosDB(tiendaId){
