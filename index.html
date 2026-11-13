@@ -787,7 +787,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 // Todos los datos quedan SOLO en este dispositivo
 // ═══════════════════════════════════════════
 const LocalDB = (function(){
-  const STORE_KEY = 'cadutedi_local_db_v1';
+  const STORE_KEY = 'cadu_db_v1';
 
   function loadDB(){
     try{
@@ -939,7 +939,7 @@ const LocalDB = (function(){
 // ═══════════════════════════════════════════
 const SB_URL = 'https://rswqqkbehrcddwspvzwm.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzd3Fxa2JlaHJjZGR3c3B2endtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NTY4NDAsImV4cCI6MjA5NzAzMjg0MH0.tvCimlzrT2514dpquiKac9S_AVtKIo7m1Oej-uHvLsQ';
-const SK = 'cadutedi_ses';
+const SK = 'cadu_ses';
 const CATS = ['Chuches y gominolas','Mascotas','Bebidas','Pilas','Chocolates y galletas','Chicles y caramelos duros','Snacks salados'];
 const CC = ['#f59e0b','#ec4899','#3b82f6','#f59e0b','#a855f7','#22c55e','#14b8a6'];
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1031,8 +1031,30 @@ function initSB(){
 // LOGIN
 // ═══════════════════════════════════════════
 function checkSession(){
-  try{ const s=localStorage.getItem(SK); if(s){const t=JSON.parse(s);if(t&&t.id){tienda=t;return true;}} }catch(e){}
+  // Intentar primero con la clave de sesión dedicada
+  try{
+    const s=localStorage.getItem(SK)||sessionStorage.getItem(SK);
+    if(s){const t=JSON.parse(s);if(t&&t.id){tienda=t;_saveSession();return true;}}
+  }catch(e){}
+  // Fallback: buscar sesión guardada dentro del DB principal
+  try{
+    const raw=localStorage.getItem('cadu_db_v1');
+    if(raw){const db=JSON.parse(raw);if(db._sesion&&db._sesion.id){tienda=db._sesion;_saveSession();return true;}}
+  }catch(e){}
   return false;
+}
+function _saveSession(){
+  if(!tienda) return;
+  const s=JSON.stringify(tienda);
+  try{localStorage.setItem(SK,s);}catch(e){}
+  try{sessionStorage.setItem(SK,s);}catch(e){}
+  // Guardar también dentro del DB como respaldo
+  try{
+    const raw=localStorage.getItem('cadu_db_v1');
+    const db=raw?JSON.parse(raw):{};
+    db._sesion=tienda;
+    localStorage.setItem('cadu_db_v1',JSON.stringify(db));
+  }catch(e){}
 }
 
 function doLogin(){
@@ -1055,7 +1077,7 @@ function doLogin(){
       }
     }
     if(encontrado){
-      try{localStorage.setItem(SK,JSON.stringify(tienda));}catch(e){}
+      _saveSession();
       enterApp();
     } else {
       err.textContent='Usuario o contraseña incorrectos';
@@ -1080,10 +1102,10 @@ function doRegister(){
   if(existe){err.textContent='Ese usuario ya existe';return;}
   const newTienda={id:'tienda-'+Date.now(),nombre:user.charAt(0).toUpperCase()+user.slice(1),usuario:user,password:pass};
   DB.tiendas.push(newTienda);
-  try{localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(DB));}catch(e){}
+  try{localStorage.setItem('cadu_db_v1',JSON.stringify(DB));}catch(e){}
   // Login automático
   tienda={id:newTienda.id,nombre:newTienda.nombre,usuario:newTienda.usuario};
-  try{localStorage.setItem(SK,JSON.stringify(tienda));}catch(e){}
+  _saveSession();
   document.getElementById('modal-register').style.display='none';
   enterApp();
 }
@@ -1116,7 +1138,7 @@ function eliminarCuenta(id){
   const DB=sb._getDB();
   DB.tiendas=DB.tiendas.filter(t=>t.id!==id);
   DB.productos=(DB.productos||[]).filter(p=>p.tienda_id!==id);
-  try{localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(DB));}catch(e){}
+  try{localStorage.setItem('cadu_db_v1',JSON.stringify(DB));}catch(e){}
   toast('✅ Cuenta eliminada');
   buildAdminCuentas();
 }
@@ -1124,6 +1146,9 @@ function eliminarCuenta(id){
 function doLogout(){
   if(!confirm('¿Cerrar sesión?')) return;
   try{localStorage.removeItem(SK);}catch(e){}
+  try{sessionStorage.removeItem(SK);}catch(e){}
+  // Eliminar sesión guardada en DB
+  try{const raw=localStorage.getItem('cadu_db_v1');if(raw){const db=JSON.parse(raw);delete db._sesion;localStorage.setItem('cadu_db_v1',JSON.stringify(db));}}catch(e){}
   tienda=null; productos=[]; reducciones=[];
   $('app').classList.remove('show');
   $('login').style.display='flex';
@@ -1159,7 +1184,7 @@ function purgarCaducadosDB(tiendaId){
     return p.fecha>=limiteStr;
   });
   const eliminados=antes-DB.productos.length;
-  if(eliminados>0) localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(DB));
+  if(eliminados>0) localStorage.setItem('cadu_db_v1',JSON.stringify(DB));
   return eliminados;
 }
 
@@ -1231,13 +1256,13 @@ function scheduleNotifications(){
   function enviar(){
     const urg=productos.filter(p=>{const d=dias(p.fecha);return d!==null&&d>=0&&d<=7;}).sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0));
     const p25=productos.filter(p=>{const d=dias(p.fecha);return d===25;}).sort((a,b)=>(dias(a.fecha)||0)-(dias(b.fecha)||0));
-    if(urg.length) new Notification('🔴 Caducidades — Caducan esta semana',{body:urg.length+' producto'+(urg.length>1?'s':'')+': '+urg.slice(0,4).map(p=>p.nombre+' ('+dias(p.fecha)+'d)').join(', '),tag:'cadutedi-urg'});
-    if(p25.length) setTimeout(()=>new Notification('⚠ Caducidades — Reducir pronto',{body:p25.length+' producto'+(p25.length>1?'s':'')+': '+p25.slice(0,4).map(p=>p.nombre+' ('+dias(p.fecha)+'d)').join(', '),tag:'cadutedi-p25'}),2000);
+    if(urg.length) new Notification('🔴 Caducidades — Caducan esta semana',{body:urg.length+' producto'+(urg.length>1?'s':'')+': '+urg.slice(0,4).map(p=>p.nombre+' ('+dias(p.fecha)+'d)').join(', '),tag:'cadu-urg'});
+    if(p25.length) setTimeout(()=>new Notification('⚠ Caducidades — Reducir pronto',{body:p25.length+' producto'+(p25.length>1?'s':'')+': '+p25.slice(0,4).map(p=>p.nombre+' ('+dias(p.fecha)+'d)').join(', '),tag:'cadu-p25'}),2000);
     window._notifTimer=setTimeout(enviar, msHasta9());
   }
   window._notifTimer=setTimeout(enviar, msHasta9());
-  const ahora=new Date(), ultima=localStorage.getItem('cadutedi_last_notif'), hoyStr=ahora.toDateString();
-  if(ahora.getHours()>=9&&ultima!==hoyStr){ localStorage.setItem('cadutedi_last_notif',hoyStr); enviar(); }
+  const ahora=new Date(), ultima=localStorage.getItem('cadu_last_notif'), hoyStr=ahora.toDateString();
+  if(ahora.getHours()>=9&&ultima!==hoyStr){ localStorage.setItem('cadu_last_notif',hoyStr); enviar(); }
 }
 
 // ═══════════════════════════════════════════
@@ -2193,7 +2218,7 @@ function goAnalisis(){
 
 function buildAnalisis(){
   const el=$('analisis-content');
-  const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+  const db=JSON.parse(localStorage.getItem('cadu_db_v1')||'{}');
   const ventas=db.ventas||[];
   const reds=reducciones||[];
   const perdidas=db.perdidas||[];
@@ -2289,7 +2314,7 @@ function buildAnalisis(){
 }
 
 function exportAnalisisXLSX(){
-  const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+  const db=JSON.parse(localStorage.getItem('cadu_db_v1')||'{}');
   const ventas=db.ventas||[];
   const reds=reducciones||[];
   if(!ventas.length&&!reds.length){toast('Sin datos');return;}
@@ -2298,7 +2323,7 @@ function exportAnalisisXLSX(){
 }
 
 function buildAnalisisXL(ventas,reds){
-  const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+  const db=JSON.parse(localStorage.getItem('cadu_db_v1')||'{}');
   const perdidas=db.perdidas||[];
   const wb=XLSX.utils.book_new();
   const ventasNormal=ventas.filter(v=>v.tipo==='normal');
@@ -2377,7 +2402,7 @@ async function savePerdida(){
   const precio=parseFloat(document.getElementById('p-precio-u').value)||(p.precio||0);
   const motivo=document.getElementById('p-motivo').value;
   const fecha=document.getElementById('p-fecha-p').value||hoy();
-  const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+  const db=JSON.parse(localStorage.getItem('cadu_db_v1')||'{}');
   if(!db.perdidas) db.perdidas=[];
   db.perdidas.push({
     id:'per-'+Date.now(),
@@ -2393,7 +2418,7 @@ async function savePerdida(){
   });
   // Eliminar el producto de la lista
   db.productos=(db.productos||[]).filter(x=>String(x.id)!==String(p.id));
-  localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
+  localStorage.setItem('cadu_db_v1',JSON.stringify(db));
   sb._reset();
   productos=productos.filter(x=>String(x.id)!==String(p.id));
   closePerdida();
@@ -2442,12 +2467,12 @@ async function saveVenta(){
       fecha:fecha,
       created_at:new Date().toISOString()
     };
-    const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+    const db=JSON.parse(localStorage.getItem('cadu_db_v1')||'{}');
     if(!db.ventas) db.ventas=[];
     db.ventas.push(venta);
     // Eliminar el producto de la lista
     db.productos=(db.productos||[]).filter(x=>String(x.id)!==String(p.id));
-    localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
+    localStorage.setItem('cadu_db_v1',JSON.stringify(db));
     sb._reset();
     productos=productos.filter(x=>String(x.id)!==String(p.id));
     closeVenta();
@@ -2475,10 +2500,10 @@ function resetReducciones(){
 
 function resetAnalisis(){
   if(!confirm('¿Borrar todas las ventas, pérdidas y reducciones? Los productos no se tocan.')) return;
-  const db=JSON.parse(localStorage.getItem('cadutedi_local_db_v1')||'{}');
+  const db=JSON.parse(localStorage.getItem('cadu_db_v1')||'{}');
   db.ventas=[];
   db.perdidas=[];
-  localStorage.setItem('cadutedi_local_db_v1',JSON.stringify(db));
+  localStorage.setItem('cadu_db_v1',JSON.stringify(db));
   sb._reset();
   toast('🧹 Ventas y pérdidas borradas',3000);
   buildAnalisis();
@@ -2506,6 +2531,12 @@ document.addEventListener('click',function(e){
 // INIT
 // ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',function(){
+  // Migrar claves antiguas si existen
+  try{
+    if(localStorage.getItem('cadutedi_local_db_v1')&&!localStorage.getItem('cadu_db_v1')){localStorage.setItem('cadu_db_v1',localStorage.getItem('cadutedi_local_db_v1'));localStorage.removeItem('cadutedi_local_db_v1');}
+    if(localStorage.getItem('cadutedi_ses')&&!localStorage.getItem('cadu_ses')){localStorage.setItem('cadu_ses',localStorage.getItem('cadutedi_ses'));localStorage.removeItem('cadutedi_ses');}
+    if(localStorage.getItem('cadutedi_last_notif')&&!localStorage.getItem('cadu_last_notif')){localStorage.setItem('cadu_last_notif',localStorage.getItem('cadutedi_last_notif'));localStorage.removeItem('cadutedi_last_notif');}
+  }catch(e){}
   initSB();
 
   // Login
