@@ -2677,6 +2677,23 @@ document.addEventListener('DOMContentLoaded',function(){
   function saveNotifCfg(obj){
     localStorage.setItem('notif_cfg', JSON.stringify(obj));
     updateNotifUI();
+    // Enviar hora al SW para que programe aunque la app esté cerrada
+    _sendHoraToSW(obj.hora||null);
+  }
+  async function _sendHoraToSW(hora){
+    if(!('serviceWorker' in navigator)) return;
+    try{
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(!reg||!reg.active) return;
+      reg.active.postMessage(hora ? {type:'SCHEDULE_NOTIF',hora} : {type:'CANCEL_NOTIF'});
+      // Guardar hora en caché del SW para que la recupere al activarse (app cerrada→SW reactivado)
+      const cache=await caches.open('cadu-v1');
+      if(hora){
+        await cache.put('/_notif_hora', new Response(JSON.stringify({hora}),{headers:{'Content-Type':'application/json'}}));
+      } else {
+        await cache.delete('/_notif_hora');
+      }
+    }catch(e){}
   }
 
   // Construir mensaje resumen
@@ -2709,10 +2726,13 @@ document.addEventListener('DOMContentLoaded',function(){
     }catch(e){}
   }
 
-  // Programar el loop diario
+  // Programar el loop diario (funciona mientras la app está abierta)
+  // Para Android con app cerrada, el SW usa su propio timer (ver sw.js)
   function scheduleNotifLoop(){
     const cfg=getNotifCfg();
     if(!cfg.hora || Notification.permission!=='granted') return;
+    // Asegurar que el SW también tiene la hora
+    _sendHoraToSW(cfg.hora);
     const [hh,mm]=cfg.hora.split(':').map(Number);
     function tick(){
       const now=new Date();
@@ -2751,6 +2771,16 @@ self.addEventListener('notificationclick',e=>{
     try{
       swReg=await navigator.serviceWorker.register('/cadu/sw.js',{scope:'/cadu/'});
       await navigator.serviceWorker.ready;
+      // Escuchar mensajes del SW (pide el texto de la notificación)
+      navigator.serviceWorker.onmessage=e=>{
+        if(e.data&&e.data.type==='GET_NOTIF_MSG'&&e.ports&&e.ports[0]){
+          const msg=buildNotifMsg();
+          e.ports[0].postMessage({msg: msg||'Revisa los productos próximos a caducar'});
+        }
+      };
+      // Si hay hora guardada, (re)enviarla al SW activo
+      const cfg=getNotifCfg();
+      if(cfg.hora) _sendHoraToSW(cfg.hora);
       return swReg;
     }catch(e){ console.warn('SW error',e); return null; }
   }
