@@ -2671,7 +2671,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // Ajustes
   $('f-imp').addEventListener('change',function(){ importFile(this); });
   $('btn-reset').addEventListener('click', resetData);
-  $('btn-reset-analisis').addEventListener('click', resetAnalisis);
+  if($('btn-reset-analisis')) $('btn-reset-analisis').addEventListener('click', resetAnalisis);
   $('btn-change-pass').addEventListener('click', openChangePass);
   document.getElementById('mb-cancel-red-edit').addEventListener('click', closeRedEdit);
   document.getElementById('mb-save-red-edit').addEventListener('click', saveRedEdit);
